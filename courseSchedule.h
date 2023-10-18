@@ -14,14 +14,14 @@ class courseSystem {
 	std::string id;  // Login id holder
 	std::string age; // Login age holder
 
-	WindowHandler wh; // Window Handler
-public:
+protected:
 	/* Setters */
 	void setName(std::string username);
 	void setGender(std::string gender);
 	void setId(std::string id);
 	void setAge(std::string age);
 
+public:
 	/* Getters */
 	std::string getUsername();
 	std::string getGender();
@@ -31,17 +31,29 @@ public:
 	/* Convert to Wide String */
 	std::wstring convertToWideString(const std::string& str);
 
-	/* Login */
-	void loginTypes(HWND hWnd);
-	
-	/* Admin Login */
-	void loginAdmin(HWND hWnd);
-	
-	/* Teacher Login */
-	void loginTeacher(HWND hWnd);
-
-	/* Student Login */
-	void loginStudent(HWND hWnd);
+	/* Login Types */
+	virtual void login(HWND hWnd);	
 };
+
+class Admin : public courseSystem {
+public:
+	/* Admin login */
+	void login(HWND hWnd) override;
+	void showInterface(HWND hWnd);
+	void courseManagement(HWND hWnd);
+};
+
+class Teacher : public courseSystem {
+public:
+	/* Teacher login */
+	void login(HWND hWnd) override;
+};
+
+class Student : public courseSystem {
+public:
+	/* Student login */
+	void login(HWND hWnd) override;
+};
+
 
 #endif

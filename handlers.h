@@ -5,8 +5,11 @@
 #include <map>
 
 class WindowHandler {
+    WindowHandler();
+
     std::map<std::string, bool> windowCreationStatus;
 
+    /* Main Menu */
     struct LoginType {
         // Window Handlers
         HWND welcome;
@@ -15,9 +18,10 @@ class WindowHandler {
         HWND student;
 
         // Set all windows to NULL by default
-        LoginType() : welcome(NULL), admin(NULL), teacher(NULL), student(NULL) {}
+        LoginType() : welcome(nullptr), admin(nullptr), teacher(nullptr), student(nullptr) {}
     } loginType;
 
+    /* Admin related handlers */
     struct AdminLogin {
         // Window Handlers
         HWND header;
@@ -29,9 +33,36 @@ class WindowHandler {
         HWND proceed;
 
         // Set all windows to NULL by default
-        AdminLogin() : header(NULL), username(NULL), usernameInput(NULL), password(NULL), passwordInput(NULL), previous(NULL), proceed(NULL) {}
+        AdminLogin() : header(nullptr), username(nullptr), usernameInput(nullptr), password(nullptr), passwordInput(nullptr), previous(nullptr), proceed(nullptr) {}
     } adminLogin;
 
+    struct AdminInterface {
+        // Window Handlers
+        HWND header;
+        HWND courseManagement;
+        HWND teachers;
+        HWND students;
+        HWND previous;
+        HWND proceed;
+
+        // Set all windows to NULL by default
+        AdminInterface() : header(nullptr), courseManagement(nullptr), teachers(nullptr), students(nullptr), previous(nullptr), proceed(nullptr) {}
+    } adminInterface;
+
+    struct AdminCourseManagement {
+        // Window Handlers
+        HWND header;
+        HWND syllabus;
+        HWND showCourses;
+        HWND addCourse;
+        HWND previous;
+        HWND proceed;
+
+        // Set all windows to NULL by default
+        AdminCourseManagement() : header(nullptr), syllabus(nullptr), showCourses(nullptr), addCourse(nullptr), previous(nullptr), proceed(nullptr) {}
+    } adminCourseManagement;
+
+    /* Teacher related handlers */
     struct TeacherLogin {
         // Window Handlers
         HWND header;
@@ -43,9 +74,10 @@ class WindowHandler {
         HWND proceed;
 
         // Set all windows to NULL by default
-        TeacherLogin() : header(NULL), username(NULL), usernameInput(NULL), password(NULL), passwordInput(NULL), previous(NULL), proceed(NULL) {}
+        TeacherLogin() : header(nullptr), username(nullptr), usernameInput(nullptr), password(nullptr), passwordInput(nullptr), previous(nullptr), proceed(nullptr) {}
     } teacherLogin;
 
+    /* Student related handlers */
     struct StudentLogin {
         // Window Handlers
         HWND header;
@@ -57,11 +89,19 @@ class WindowHandler {
         HWND proceed;
 
         // Set all windows to NULL by default
-        StudentLogin() : header(NULL), username(NULL), usernameInput(NULL), password(NULL), passwordInput(NULL), previous(NULL), proceed(NULL) {}
+        StudentLogin() : header(nullptr), username(nullptr), usernameInput(nullptr), password(nullptr), passwordInput(nullptr), previous(nullptr), proceed(nullptr) {}
     } studentLogin;
 
 public:
-    WindowHandler();
+    // Singleton
+    WindowHandler(const WindowHandler&) = delete;
+    WindowHandler& operator=(const WindowHandler&) = delete;
+
+    // Create an instance of the object
+    static WindowHandler& getInstance() {
+        static WindowHandler instance;
+        return instance;
+    }
 
     // Function to set the status when a window is created.
     void setWindowCreated(const std::string& windowName, bool isCreated);
@@ -76,6 +116,15 @@ public:
     // Admin Login
     void createAdminLoginWindows(HWND hWnd);
     void setAdminLoginVisibility(bool isVisible);
+
+    // Admin Interface
+    void createAdminInterfaceWindows(HWND hWnd);
+    void setAdminInterfaceVisibility(bool isVisible);
+
+    // BURADA KALDIM
+    // Admin Course Management
+    void createAdminCourseManagementWindows(HWND hWnd);
+    void setAdminCourseManagementVisibility(bool isVisible);
 
     // Teacher Login
     void createTeacherLoginWindows(HWND hWnd);

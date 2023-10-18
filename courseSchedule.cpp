@@ -103,11 +103,15 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    static courseSystem cs;
+    static courseSystem cs; // creating an Admin, but treating it as courseSystem
+    static courseSystem* userAdmin = new Admin(); // creating an Admin, but treating it as courseSystem
+    static courseSystem* userTeacher = new Teacher(); // creating an Admin, but treating it as courseSystem
+    static courseSystem* userStudent = new Student(); // creating an Admin, but treating it as courseSystem
+
     switch (message)
     {
         case WM_CREATE:
-            cs.loginTypes(hWnd);
+            cs.login(hWnd);
             break;
 
         case WM_COMMAND:
@@ -118,27 +122,40 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 {
                 case 401:
                     // Admin Login Panel
-                    cs.loginAdmin(hWnd);
+                    userAdmin->login(hWnd);
                     break;
                 case 402:
                     // Teacher Login Panel
-                    cs.loginTeacher(hWnd);
+                    userTeacher->login(hWnd);
                     break;
                 case 403:
                     // Student Login Panel
-                    cs.loginStudent(hWnd);
+                    userStudent->login(hWnd);
                     break;
                 case 101:
                     // Back to Login Types Menu
-                    cs.loginTypes(hWnd);
+                    cs.login(hWnd);
+                    break;
+                case 102:
+                {
+                    // Proceed to Admin Interface
+                    Admin* actualAdmin = static_cast<Admin*>(userAdmin);
+
+                    // Now, we can call the function specific to the Admin class.
+                    actualAdmin->showInterface(hWnd);
+                    break;
+                }
+                case 114:
+                    // Back to Login Types Menu
+                    cs.login(hWnd);
                     break;
                 case 201:
                     // Back to Login Types Menu
-                    cs.loginTypes(hWnd);
+                    cs.login(hWnd);
                     break;
                 case 301:
                     // Back to Login Types Menu
-                    cs.loginTypes(hWnd);
+                    cs.login(hWnd);
                     break;
                 case IDM_ABOUT:
                     DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
@@ -153,6 +170,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             break;
 
         case WM_DESTROY:
+            delete userAdmin;
+            userAdmin = nullptr;
+            delete userTeacher;
+            userTeacher = nullptr;
+            delete userStudent;
+            userStudent = nullptr;
+
             PostQuitMessage(0);
             break;
 

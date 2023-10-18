@@ -21,12 +21,15 @@ std::wstring courseSystem::convertToWideString(const std::string& str) {
 	return wstr;
 }
 
-// Main wnd
-void courseSystem::loginTypes(HWND hWnd) {
-	// Hide child login panels
+/* Main wnd */
+void courseSystem::login(HWND hWnd) {
+	WindowHandler& wh = wh.getInstance();
+
+	// Hide other windows
 	wh.setAdminLoginVisibility(false);
 	wh.setTeacherLoginVisibility(false);
 	wh.setStudentLoginVisibility(false);
+	wh.setAdminInterfaceVisibility(false);
 
 	sqlite3* DB;
 	std::string url = "courseScheduleDB.sqlite";
@@ -59,8 +62,12 @@ void courseSystem::loginTypes(HWND hWnd) {
 	wh.setLoginTypeVisibility(true);
 }
 
-// Admin Login wnd
-void courseSystem::loginAdmin(HWND hWnd) {
+// Admin related windows
+
+/* Admin Login wnd */
+void Admin::login(HWND hWnd) {
+	WindowHandler& wh = wh.getInstance();
+
 	// HIDE Login Type
 	wh.setLoginTypeVisibility(false);
 
@@ -71,8 +78,38 @@ void courseSystem::loginAdmin(HWND hWnd) {
 	wh.setAdminLoginVisibility(true);
 }
 
-// Teacher Login wnd
-void courseSystem::loginTeacher(HWND hWnd) {
+/* Admin main menu */
+void Admin::showInterface(HWND hWnd) {
+	WindowHandler& wh = wh.getInstance();
+
+	// Hide Admin Login
+	wh.setAdminLoginVisibility(false);
+
+	// Show Admin Inferface
+	if (!wh.isWindowCreated("adminInterface")) {
+		wh.createAdminInterfaceWindows(hWnd);
+	}
+	wh.setAdminInterfaceVisibility(true);
+}
+
+/* Admin course management */
+void Admin::courseManagement(HWND hWnd) {
+	WindowHandler& wh = wh.getInstance();
+
+	// Hide Admin Login
+	wh.setAdminInterfaceVisibility(false);
+
+	// Show Admin Inferface
+	if (!wh.isWindowCreated("adminCourseManagement")) {
+		wh.createAdminCourseManagementWindows(hWnd);
+	}
+	wh.setAdminCourseManagementVisibility(true);
+}
+
+/* Teacher Login wnd */
+void Teacher::login(HWND hWnd) {
+	WindowHandler& wh = wh.getInstance();
+
 	// HIDE Login Type
 	wh.setLoginTypeVisibility(false);
 
@@ -83,8 +120,10 @@ void courseSystem::loginTeacher(HWND hWnd) {
 	wh.setTeacherLoginVisibility(true);
 }
 
-// Student Login wnd
-void courseSystem::loginStudent(HWND hWnd) {
+/* Student Login wnd */
+void Student::login(HWND hWnd) {
+	WindowHandler& wh = wh.getInstance();
+
 	// HIDE Login Type
 	wh.setLoginTypeVisibility(false);
 

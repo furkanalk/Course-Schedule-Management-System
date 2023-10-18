@@ -5,6 +5,8 @@
 WindowHandler::WindowHandler() {
     windowCreationStatus["loginType"] = false;
     windowCreationStatus["adminLogin"] = false;
+    windowCreationStatus["adminInterface"] = false;
+    windowCreationStatus["adminCourseManagement"] = false;
     windowCreationStatus["teacherLogin"] = false;
     windowCreationStatus["studentLogin"] = false;
 }
@@ -84,6 +86,37 @@ void WindowHandler::setAdminLoginVisibility(bool visible) {
     ShowWindow(adminLogin.passwordInput, cmdShow);
     ShowWindow(adminLogin.previous, cmdShow);
     ShowWindow(adminLogin.proceed, cmdShow);
+}
+
+/* Admin Interface */
+void WindowHandler::createAdminInterfaceWindows(HWND hWnd) {
+    // Font style
+    HFONT hFontH1 = CreateFont(32, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
+    HFONT hFontH2 = CreateFont(32, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
+    HFONT hFontH3 = CreateFont(24, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
+
+    // Window Controls
+    adminInterface.header = CreateWindow(TEXT("static"), TEXT("- Administrator Panel -"), WS_CHILD | ES_CENTER | WS_BORDER, 100, 80, 600, 450, hWnd, NULL, NULL, NULL);
+    adminInterface.courseManagement = CreateWindow(TEXT("button"), TEXT("Course Management"), WS_CHILD | ES_CENTER, 240, 170, 300, 80, hWnd, (HMENU)111, NULL, NULL);
+    adminInterface.teachers = CreateWindow(TEXT("button"), TEXT("Teachers"), WS_CHILD | ES_CENTER, 240, 270, 300, 80, hWnd, (HMENU)112, NULL, NULL);
+    adminInterface.students = CreateWindow(TEXT("button"), TEXT("Students"), WS_BORDER | WS_CHILD, 240, 370, 300, 80, hWnd, (HMENU)113, NULL, NULL);
+    adminInterface.previous = CreateWindow(TEXT("button"), TEXT("Exit"), WS_BORDER | WS_CHILD, 350, 480, 80, 30, hWnd, (HMENU)114, NULL, NULL);
+
+    // Apply fonts to controls
+    SendMessage(adminInterface.header, WM_SETFONT, (WPARAM)hFontH1, TRUE);
+    SendMessage(adminInterface.courseManagement, WM_SETFONT, (WPARAM)hFontH2, TRUE);
+    SendMessage(adminInterface.teachers, WM_SETFONT, (WPARAM)hFontH2, TRUE);
+    SendMessage(adminInterface.students, WM_SETFONT, (WPARAM)hFontH2, TRUE);
+    SendMessage(adminInterface.previous, WM_SETFONT, (WPARAM)hFontH3, TRUE);
+}
+
+void WindowHandler::setAdminInterfaceVisibility(bool visible) {
+    int cmdShow = visible ? SW_SHOW : SW_HIDE;
+    ShowWindow(adminInterface.header, cmdShow);
+    ShowWindow(adminInterface.courseManagement, cmdShow);
+    ShowWindow(adminInterface.teachers, cmdShow);
+    ShowWindow(adminInterface.students, cmdShow);
+    ShowWindow(adminInterface.previous, cmdShow);
 }
 
 /* Teacher Login */
