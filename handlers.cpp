@@ -51,19 +51,21 @@ void WindowHandler::setLoginTypeVisibility(bool isVisible) {
     ShowWindow(loginType.student, cmdShow);
 }
 
+// Admin Windows
+
 /* Admin Login */
 void WindowHandler::createAdminLoginWindows(HWND hWnd) {
     // Font style
     HFONT hFontH1 = CreateFont(32, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
     HFONT hFontH2 = CreateFont(24, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
-    HFONT hFontH3 = CreateFont(24, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
+    HFONT hFontH3 = CreateFont(21, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
 
     // Window Controls
-    adminLogin.header = CreateWindow(TEXT("static"), TEXT("- Administrator Login -"), WS_CHILD | ES_CENTER | WS_BORDER, 100, 100, 600, 250, hWnd, NULL, NULL, NULL);
+    adminLogin.header = CreateWindow(TEXT("static"), TEXT("- Administrator Login -"), WS_CHILD | ES_CENTER, 100, 100, 600, 250, hWnd, NULL, NULL, NULL);
     adminLogin.username = CreateWindow(TEXT("static"), TEXT("Username ="), WS_CHILD | ES_CENTER, 240, 180, 120, 20, hWnd, NULL, NULL, NULL);
-    adminLogin.usernameInput = CreateWindow(TEXT("EDIT"), TEXT(""), WS_BORDER | WS_CHILD, 370, 180, 180, 20, hWnd, NULL, NULL, NULL);
+    adminLogin.usernameInput = CreateWindow(TEXT("EDIT"), TEXT(""), WS_BORDER | WS_CHILD, 370, 180, 180, 25, hWnd, NULL, NULL, NULL);
     adminLogin.password = CreateWindow(TEXT("static"), TEXT("Password ="), WS_CHILD | ES_CENTER, 240, 240, 120, 20, hWnd, NULL, NULL, NULL);
-    adminLogin.passwordInput = CreateWindow(TEXT("EDIT"), TEXT(""), WS_BORDER | WS_CHILD | ES_PASSWORD, 370, 240, 180, 20, hWnd, NULL, NULL, NULL);
+    adminLogin.passwordInput = CreateWindow(TEXT("EDIT"), TEXT(""), WS_BORDER | WS_CHILD | ES_PASSWORD, 370, 240, 180, 25, hWnd, NULL, NULL, NULL);
     adminLogin.previous = CreateWindow(TEXT("button"), TEXT("Back"), WS_BORDER | WS_CHILD, 310, 300, 80, 30, hWnd, (HMENU)101, NULL, NULL);
     adminLogin.proceed = CreateWindow(TEXT("button"), TEXT("Login"), WS_BORDER | WS_CHILD, 410, 300, 80, 30, hWnd, (HMENU)102, NULL, NULL);
 
@@ -96,7 +98,7 @@ void WindowHandler::createAdminInterfaceWindows(HWND hWnd) {
     HFONT hFontH3 = CreateFont(24, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
 
     // Window Controls
-    adminInterface.header = CreateWindow(TEXT("static"), TEXT("- Administrator Panel -"), WS_CHILD | ES_CENTER | WS_BORDER, 100, 80, 600, 450, hWnd, NULL, NULL, NULL);
+    adminInterface.header = CreateWindow(TEXT("static"), TEXT("- Administrator Panel -"), WS_CHILD | ES_CENTER, 100, 80, 600, 450, hWnd, NULL, NULL, NULL);
     adminInterface.courseManagement = CreateWindow(TEXT("button"), TEXT("Course Management"), WS_CHILD | ES_CENTER, 240, 170, 300, 80, hWnd, (HMENU)111, NULL, NULL);
     adminInterface.teachers = CreateWindow(TEXT("button"), TEXT("Teachers"), WS_CHILD | ES_CENTER, 240, 270, 300, 80, hWnd, (HMENU)112, NULL, NULL);
     adminInterface.students = CreateWindow(TEXT("button"), TEXT("Students"), WS_BORDER | WS_CHILD, 240, 370, 300, 80, hWnd, (HMENU)113, NULL, NULL);
@@ -127,7 +129,7 @@ void WindowHandler::createAdminCourseManagementWindows(HWND hWnd) {
     HFONT hFontH3 = CreateFont(24, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
 
     // Window Controls
-    adminCourseManagement.header = CreateWindow(TEXT("static"), TEXT("- Administrator Panel -"), WS_CHILD | ES_CENTER | WS_BORDER, 100, 80, 600, 450, hWnd, NULL, NULL, NULL);
+    adminCourseManagement.header = CreateWindow(TEXT("static"), TEXT("- Administrator Panel -"), WS_CHILD | ES_CENTER, 100, 80, 600, 450, hWnd, NULL, NULL, NULL);
     adminCourseManagement.syllabus = CreateWindow(TEXT("button"), TEXT("Create Syllabus"), WS_CHILD | ES_CENTER, 240, 170, 300, 80, hWnd, (HMENU)121, NULL, NULL);
     adminCourseManagement.showCourses = CreateWindow(TEXT("button"), TEXT("See Courses"), WS_CHILD | ES_CENTER, 240, 270, 300, 80, hWnd, (HMENU)122, NULL, NULL);
     adminCourseManagement.addCourse = CreateWindow(TEXT("button"), TEXT("Add Course"), WS_BORDER | WS_CHILD, 240, 370, 300, 80, hWnd, (HMENU)123, NULL, NULL);
@@ -141,7 +143,6 @@ void WindowHandler::createAdminCourseManagementWindows(HWND hWnd) {
     SendMessage(adminCourseManagement.addCourse, WM_SETFONT, (WPARAM)hFontH2, TRUE);
     SendMessage(adminCourseManagement.previous, WM_SETFONT, (WPARAM)hFontH3, TRUE);
     SendMessage(adminCourseManagement.proceed, WM_SETFONT, (WPARAM)hFontH3, TRUE);
-
 }
 
 void WindowHandler::setAdminCourseManagementVisibility(bool visible) {
@@ -162,7 +163,7 @@ void WindowHandler::createAdminTeacherManagementWindows(HWND hWnd) {
     HFONT hFontH3 = CreateFont(24, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
 
     // Window Controls
-    adminTeacherManagement.header = CreateWindow(TEXT("static"), TEXT("- Administrator Panel -"), WS_CHILD | ES_CENTER | WS_BORDER, 100, 80, 600, 450, hWnd, NULL, NULL, NULL);
+    adminTeacherManagement.header = CreateWindow(TEXT("static"), TEXT("- Administrator Panel -"), WS_CHILD | ES_CENTER, 100, 80, 600, 450, hWnd, NULL, NULL, NULL);
     adminTeacherManagement.showTeachers = CreateWindow(TEXT("button"), TEXT("Manage Teachers"), WS_CHILD | ES_CENTER, 240, 170, 300, 80, hWnd, (HMENU)131, NULL, NULL);
     adminTeacherManagement.addTeacher = CreateWindow(TEXT("button"), TEXT("Add Teacher"), WS_CHILD | ES_CENTER, 240, 270, 300, 80, hWnd, (HMENU)132, NULL, NULL);
     adminTeacherManagement.previous = CreateWindow(TEXT("button"), TEXT("Back"), WS_BORDER | WS_CHILD, 300, 480, 80, 30, hWnd, (HMENU)133, NULL, NULL);
@@ -174,7 +175,6 @@ void WindowHandler::createAdminTeacherManagementWindows(HWND hWnd) {
     SendMessage(adminTeacherManagement.addTeacher, WM_SETFONT, (WPARAM)hFontH2, TRUE);
     SendMessage(adminTeacherManagement.previous, WM_SETFONT, (WPARAM)hFontH3, TRUE);
     SendMessage(adminTeacherManagement.proceed, WM_SETFONT, (WPARAM)hFontH3, TRUE);
-
 }
 
 void WindowHandler::setAdminTeacherManagementVisibility(bool visible) {
@@ -186,6 +186,67 @@ void WindowHandler::setAdminTeacherManagementVisibility(bool visible) {
     ShowWindow(adminTeacherManagement.proceed, cmdShow);
 }
 
+/* Add Teacher */
+void WindowHandler::createAdminAddTeacherWindows(HWND hWnd) {
+    // Font style
+    HFONT hFontH1 = CreateFont(32, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
+    HFONT hFontH2 = CreateFont(18, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
+    HFONT hFontH3 = CreateFont(24, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
+    HFONT hFontH4 = CreateFont(30, 0, 0, 0, FW_SEMIBOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
+
+    // Window Controls
+    adminAddTeacher.header = CreateWindow(TEXT("static"), TEXT("- Administrator Panel -"), WS_CHILD | ES_CENTER, 100, 80, 600, 450, hWnd, NULL, NULL, NULL);
+    adminAddTeacher.fullname = CreateWindow(TEXT("static"), TEXT("Full Name ="), WS_CHILD | ES_CENTER, 220, 150, 120, 20, hWnd, NULL, NULL, NULL);
+    adminAddTeacher.fullnameInput = CreateWindow(TEXT("EDIT"), TEXT(""), WS_BORDER | WS_CHILD, 350, 150, 220, 25, hWnd, NULL, NULL, NULL);
+    adminAddTeacher.course = CreateWindow(TEXT("static"), TEXT("Course ="), WS_CHILD | ES_CENTER, 230, 200, 120, 20, hWnd, NULL, NULL, NULL);
+    adminAddTeacher.courseInput = CreateWindow(TEXT("EDIT"), TEXT(""), WS_BORDER | WS_CHILD, 350, 200, 220, 25, hWnd, NULL, NULL, NULL);
+    adminAddTeacher.headerSecond = CreateWindow(TEXT("static"), TEXT("Work Days"), WS_CHILD | ES_CENTER, 320, 250, 160, 40, hWnd, NULL, NULL, NULL);
+    adminAddTeacher.monday = CreateWindow(TEXT("button"), TEXT("Monday"), WS_CHILD | ES_CENTER | BS_CHECKBOX, 360, 300, 160, 20, hWnd, NULL, NULL, NULL);
+    adminAddTeacher.tuesday = CreateWindow(TEXT("button"), TEXT("Tuesday"), WS_CHILD | ES_CENTER | BS_CHECKBOX, 360, 320, 160, 20, hWnd, NULL, NULL, NULL);
+    adminAddTeacher.wednesday = CreateWindow(TEXT("button"), TEXT("Wednesday"), WS_CHILD | ES_CENTER | BS_CHECKBOX, 360, 340, 160, 20, hWnd, NULL, NULL, NULL);
+    adminAddTeacher.thursday = CreateWindow(TEXT("button"), TEXT("Thursday"), WS_CHILD | ES_CENTER | BS_CHECKBOX, 360, 360, 160, 20, hWnd, NULL, NULL, NULL);
+    adminAddTeacher.friday = CreateWindow(TEXT("button"), TEXT("Friday"), WS_CHILD | ES_CENTER | BS_CHECKBOX, 360, 380, 160, 20, hWnd, NULL, NULL, NULL);
+    adminAddTeacher.saturday = CreateWindow(TEXT("button"), TEXT("Saturday"), WS_CHILD | ES_CENTER | BS_CHECKBOX, 360, 400, 160, 20, hWnd, NULL, NULL, NULL);
+    adminAddTeacher.previous = CreateWindow(TEXT("button"), TEXT("Back"), WS_BORDER | WS_CHILD, 300, 480, 80, 30, hWnd, (HMENU)141, NULL, NULL);
+    adminAddTeacher.insert = CreateWindow(TEXT("button"), TEXT("Add"), WS_BORDER | WS_CHILD, 400, 480, 80, 30, hWnd, (HMENU)142, NULL, NULL);
+
+    // Apply fonts to controls
+    SendMessage(adminAddTeacher.header, WM_SETFONT, (WPARAM)hFontH1, TRUE);
+    SendMessage(adminAddTeacher.fullname, WM_SETFONT, (WPARAM)hFontH3, TRUE);
+    SendMessage(adminAddTeacher.fullnameInput, WM_SETFONT, (WPARAM)hFontH2, TRUE);
+    SendMessage(adminAddTeacher.course, WM_SETFONT, (WPARAM)hFontH3, TRUE);
+    SendMessage(adminAddTeacher.courseInput, WM_SETFONT, (WPARAM)hFontH2, TRUE);
+    SendMessage(adminAddTeacher.headerSecond, WM_SETFONT, (WPARAM)hFontH4, TRUE);
+    SendMessage(adminAddTeacher.monday, WM_SETFONT, (WPARAM)hFontH2, TRUE);
+    SendMessage(adminAddTeacher.tuesday, WM_SETFONT, (WPARAM)hFontH2, TRUE);
+    SendMessage(adminAddTeacher.wednesday, WM_SETFONT, (WPARAM)hFontH2, TRUE);
+    SendMessage(adminAddTeacher.thursday, WM_SETFONT, (WPARAM)hFontH2, TRUE);
+    SendMessage(adminAddTeacher.friday, WM_SETFONT, (WPARAM)hFontH2, TRUE);
+    SendMessage(adminAddTeacher.saturday, WM_SETFONT, (WPARAM)hFontH2, TRUE);
+    SendMessage(adminAddTeacher.previous, WM_SETFONT, (WPARAM)hFontH3, TRUE);
+    SendMessage(adminAddTeacher.insert, WM_SETFONT, (WPARAM)hFontH3, TRUE);
+}
+
+void WindowHandler::setAdminAddTeacherVisibility(bool visible) {
+    int cmdShow = visible ? SW_SHOW : SW_HIDE;
+    ShowWindow(adminAddTeacher.header, cmdShow);
+    ShowWindow(adminAddTeacher.fullname, cmdShow);
+    ShowWindow(adminAddTeacher.fullnameInput, cmdShow);
+    ShowWindow(adminAddTeacher.course, cmdShow);
+    ShowWindow(adminAddTeacher.courseInput, cmdShow);
+    ShowWindow(adminAddTeacher.headerSecond, cmdShow);
+    ShowWindow(adminAddTeacher.monday, cmdShow);
+    ShowWindow(adminAddTeacher.tuesday, cmdShow);
+    ShowWindow(adminAddTeacher.wednesday, cmdShow);
+    ShowWindow(adminAddTeacher.thursday, cmdShow);
+    ShowWindow(adminAddTeacher.friday, cmdShow);
+    ShowWindow(adminAddTeacher.saturday, cmdShow);
+    ShowWindow(adminAddTeacher.previous, cmdShow);
+    ShowWindow(adminAddTeacher.insert, cmdShow);
+}
+
+// Teacher Windows
+
 /* Teacher Login */
 void WindowHandler::createTeacherLoginWindows(HWND hWnd) {
     // Font style
@@ -194,7 +255,7 @@ void WindowHandler::createTeacherLoginWindows(HWND hWnd) {
     HFONT hFontH3 = CreateFont(24, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
 
     // Window Controls
-    teacherLogin.header = CreateWindow(TEXT("static"), TEXT("- Teacher Login -"), WS_CHILD | ES_CENTER | WS_BORDER, 100, 100, 600, 250, hWnd, NULL, NULL, NULL);
+    teacherLogin.header = CreateWindow(TEXT("static"), TEXT("- Teacher Login -"), WS_CHILD | ES_CENTER, 100, 100, 600, 250, hWnd, NULL, NULL, NULL);
     teacherLogin.username = CreateWindow(TEXT("static"), TEXT("Username ="), WS_CHILD | ES_CENTER, 240, 180, 120, 20, hWnd, NULL, NULL, NULL);
     teacherLogin.usernameInput = CreateWindow(TEXT("EDIT"), TEXT(""), WS_BORDER | WS_CHILD, 370, 180, 180, 20, hWnd, NULL, NULL, NULL);
     teacherLogin.password = CreateWindow(TEXT("static"), TEXT("Password ="), WS_CHILD | ES_CENTER, 240, 240, 120, 20, hWnd, NULL, NULL, NULL);
@@ -223,6 +284,8 @@ void WindowHandler::setTeacherLoginVisibility(bool visible) {
     ShowWindow(teacherLogin.proceed, cmdShow);
 }
 
+// Student Windows
+
 /* Student Login */
 void WindowHandler::createStudentLoginWindows(HWND hWnd) {
     // Font style
@@ -231,7 +294,7 @@ void WindowHandler::createStudentLoginWindows(HWND hWnd) {
     HFONT hFontH3 = CreateFont(24, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
 
     // Window Controls
-    studentLogin.header = CreateWindow(TEXT("static"), TEXT("- Student Login -"), WS_CHILD | ES_CENTER | WS_BORDER, 100, 100, 600, 250, hWnd, NULL, NULL, NULL);
+    studentLogin.header = CreateWindow(TEXT("static"), TEXT("- Student Login -"), WS_CHILD | ES_CENTER, 100, 100, 600, 250, hWnd, NULL, NULL, NULL);
     studentLogin.username = CreateWindow(TEXT("static"), TEXT("Username ="), WS_CHILD | ES_CENTER, 240, 180, 120, 20, hWnd, NULL, NULL, NULL);
     studentLogin.usernameInput = CreateWindow(TEXT("EDIT"), TEXT(""), WS_BORDER | WS_CHILD, 370, 180, 180, 20, hWnd, NULL, NULL, NULL);
     studentLogin.password = CreateWindow(TEXT("static"), TEXT("Password ="), WS_CHILD | ES_CENTER, 240, 240, 120, 20, hWnd, NULL, NULL, NULL);

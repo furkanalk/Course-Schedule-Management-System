@@ -69,7 +69,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_COURSESCHEDULE));
     wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground  = CreateSolidBrush(RGB(200, 200, 255));
-    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_COURSESCHEDULE);
+    wcex.lpszMenuName   = NULL;
     wcex.lpszClassName  = szWindowClass;
     wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
@@ -87,7 +87,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
     AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, TRUE);
 
-    HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPED | WS_SYSMENU | WS_MINIMIZEBOX,
+    HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_SYSMENU | WS_MINIMIZEBOX,
         CW_USEDEFAULT, CW_USEDEFAULT, rect.right - rect.left, rect.bottom - rect.top, nullptr, nullptr, hInstance, nullptr);
 
     if (!hWnd)
@@ -103,6 +103,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    static HBRUSH hbrBkgnd = CreateSolidBrush(RGB(200, 200, 255));
+
     static courseSystem cs; // creating an Admin, but treating it as courseSystem
     static courseSystem* userAdmin = new Admin(); // creating an Admin, but treating it as courseSystem
     static courseSystem* userTeacher = new Teacher(); // creating an Admin, but treating it as courseSystem
@@ -110,7 +112,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     Admin* actualAdmin = static_cast<Admin*>(userAdmin); // creating an Admin and can access its own functions
 
     switch (message)
-    {
+    {   
+        case WM_CTLCOLORSTATIC:
+        {
+            HDC hdcStatic = (HDC)wParam;
+            SetBkColor(hdcStatic, RGB(200, 200, 255));
+            return (INT_PTR)hbrBkgnd;
+        }
+
         case WM_CREATE:
             cs.login(hWnd);
             break;
@@ -170,6 +179,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                     break;
 
                 /* Teacher Management */
+                case 132:
+                    // go to Admin Add Teacher from Teacher Management (proceed)
+                    actualAdmin->addTeacher(hWnd);
+                    break;
                 case 133:
                     // back to Admin Interface from Teacher Management (back)
                     actualAdmin->showInterface(hWnd);
@@ -179,6 +192,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                     cs.login(hWnd);
                     break;
 
+                /* Add Teacher */
+                case 141:
+                    // back to Teacher Management from Add Teacher (back)
+                    actualAdmin->teacherManagement(hWnd);
+                    break;
                 case 201:
                     // Back to Login Types Menu
                     cs.login(hWnd);

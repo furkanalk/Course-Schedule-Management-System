@@ -42,6 +42,7 @@ public:
 	void showInterface(HWND hWnd);
 	void courseManagement(HWND hWnd);
 	void teacherManagement(HWND hWnd);
+	void addTeacher(HWND hWnd);
 };
 
 class Teacher : public courseSystem {

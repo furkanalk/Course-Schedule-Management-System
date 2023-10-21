@@ -102,7 +102,7 @@ void Admin::showInterface(HWND hWnd) {
 void Admin::courseManagement(HWND hWnd) {
 	WindowHandler& wh = wh.getInstance();
 
-	// Hide Admin Login
+	// Hide Admin Interface
 	wh.setAdminInterfaceVisibility(false);
 
 	// Show Admin Inferface
@@ -116,14 +116,29 @@ void Admin::courseManagement(HWND hWnd) {
 void Admin::teacherManagement(HWND hWnd) {
 	WindowHandler& wh = wh.getInstance();
 
-	// Hide Admin Login
+	// Hide other Admin windows
 	wh.setAdminInterfaceVisibility(false);
+	wh.setAdminAddTeacherVisibility(false);
 
 	// Show Admin Inferface
 	if (!wh.isWindowCreated("adminTeacherManagement")) {
 		wh.createAdminTeacherManagementWindows(hWnd);
 	}
 	wh.setAdminTeacherManagementVisibility(true);
+}
+
+/* Admin add teacher */
+void Admin::addTeacher(HWND hWnd) {
+	WindowHandler& wh = wh.getInstance();
+
+	// Hide Teacher Management
+	wh.setAdminTeacherManagementVisibility(false);
+
+	// Show Add Teacher
+	if (!wh.isWindowCreated("adminAddTeacher")) {
+		wh.createAdminAddTeacherWindows(hWnd);
+	}
+	wh.setAdminAddTeacherVisibility(true);
 }
 
 /* Teacher Login wnd */

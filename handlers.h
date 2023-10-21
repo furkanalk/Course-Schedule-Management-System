@@ -74,6 +74,28 @@ class WindowHandler {
         AdminTeacherManagement() : header(nullptr), showTeachers(nullptr), addTeacher(nullptr), previous(nullptr), proceed(nullptr) {}
     } adminTeacherManagement;
 
+    struct AdminAddTeacher {
+        // Window Handlers
+        HWND header;
+        HWND fullname;
+        HWND fullnameInput;
+        HWND course;
+        HWND courseInput;
+        HWND headerSecond;
+        HWND monday;
+        HWND tuesday;
+        HWND wednesday;
+        HWND thursday;
+        HWND friday;
+        HWND saturday;
+        HWND previous;
+        HWND insert;
+
+        // Set all windows to NULL by default
+        AdminAddTeacher() : header(nullptr), fullname(nullptr), fullnameInput(nullptr), course(nullptr) , courseInput(nullptr), headerSecond(nullptr), monday(nullptr), tuesday(nullptr),
+            wednesday(nullptr), thursday(nullptr), friday(nullptr), saturday(nullptr), previous(nullptr), insert(nullptr) {}
+    } adminAddTeacher;
+
     /* Teacher related handlers */
     struct TeacherLogin {
         // Window Handlers
@@ -137,9 +159,13 @@ public:
     void createAdminCourseManagementWindows(HWND hWnd);
     void setAdminCourseManagementVisibility(bool isVisible);
 
-    // Admin Course Management
+    // Admin Teacher Management
     void createAdminTeacherManagementWindows(HWND hWnd);
     void setAdminTeacherManagementVisibility(bool isVisible);
+
+    // Admin Add Teacher
+    void createAdminAddTeacherWindows(HWND hWnd);
+    void setAdminAddTeacherVisibility(bool isVisible);
 
     // Teacher Login
     void createTeacherLoginWindows(HWND hWnd);
