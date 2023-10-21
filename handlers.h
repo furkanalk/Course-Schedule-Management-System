@@ -62,6 +62,18 @@ class WindowHandler {
         AdminCourseManagement() : header(nullptr), syllabus(nullptr), showCourses(nullptr), addCourse(nullptr), previous(nullptr), proceed(nullptr) {}
     } adminCourseManagement;
 
+    struct AdminTeacherManagement {
+        // Window Handlers
+        HWND header;
+        HWND showTeachers;
+        HWND addTeacher;
+        HWND previous;
+        HWND proceed;
+
+        // Set all windows to NULL by default
+        AdminTeacherManagement() : header(nullptr), showTeachers(nullptr), addTeacher(nullptr), previous(nullptr), proceed(nullptr) {}
+    } adminTeacherManagement;
+
     /* Teacher related handlers */
     struct TeacherLogin {
         // Window Handlers
@@ -121,10 +133,13 @@ public:
     void createAdminInterfaceWindows(HWND hWnd);
     void setAdminInterfaceVisibility(bool isVisible);
 
-    // BURADA KALDIM
     // Admin Course Management
     void createAdminCourseManagementWindows(HWND hWnd);
     void setAdminCourseManagementVisibility(bool isVisible);
+
+    // Admin Course Management
+    void createAdminTeacherManagementWindows(HWND hWnd);
+    void setAdminTeacherManagementVisibility(bool isVisible);
 
     // Teacher Login
     void createTeacherLoginWindows(HWND hWnd);

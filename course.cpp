@@ -25,11 +25,15 @@ std::wstring courseSystem::convertToWideString(const std::string& str) {
 void courseSystem::login(HWND hWnd) {
 	WindowHandler& wh = wh.getInstance();
 
-	// Hide other windows
+	/* Hide other windows */
+	// Login Types
 	wh.setAdminLoginVisibility(false);
 	wh.setTeacherLoginVisibility(false);
 	wh.setStudentLoginVisibility(false);
+	// Admin
 	wh.setAdminInterfaceVisibility(false);
+	wh.setAdminCourseManagementVisibility(false);
+	wh.setAdminTeacherManagementVisibility(false);
 
 	sqlite3* DB;
 	std::string url = "courseScheduleDB.sqlite";
@@ -82,8 +86,10 @@ void Admin::login(HWND hWnd) {
 void Admin::showInterface(HWND hWnd) {
 	WindowHandler& wh = wh.getInstance();
 
-	// Hide Admin Login
+	// Hide other Admin windows
 	wh.setAdminLoginVisibility(false);
+	wh.setAdminCourseManagementVisibility(false);
+	wh.setAdminTeacherManagementVisibility(false);
 
 	// Show Admin Inferface
 	if (!wh.isWindowCreated("adminInterface")) {
@@ -104,6 +110,20 @@ void Admin::courseManagement(HWND hWnd) {
 		wh.createAdminCourseManagementWindows(hWnd);
 	}
 	wh.setAdminCourseManagementVisibility(true);
+}
+
+/* Admin teacher management */
+void Admin::teacherManagement(HWND hWnd) {
+	WindowHandler& wh = wh.getInstance();
+
+	// Hide Admin Login
+	wh.setAdminInterfaceVisibility(false);
+
+	// Show Admin Inferface
+	if (!wh.isWindowCreated("adminTeacherManagement")) {
+		wh.createAdminTeacherManagementWindows(hWnd);
+	}
+	wh.setAdminTeacherManagementVisibility(true);
 }
 
 /* Teacher Login wnd */

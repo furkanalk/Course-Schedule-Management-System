@@ -119,6 +119,73 @@ void WindowHandler::setAdminInterfaceVisibility(bool visible) {
     ShowWindow(adminInterface.previous, cmdShow);
 }
 
+/* Course Management */
+void WindowHandler::createAdminCourseManagementWindows(HWND hWnd) {
+    // Font style
+    HFONT hFontH1 = CreateFont(32, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
+    HFONT hFontH2 = CreateFont(32, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
+    HFONT hFontH3 = CreateFont(24, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
+
+    // Window Controls
+    adminCourseManagement.header = CreateWindow(TEXT("static"), TEXT("- Administrator Panel -"), WS_CHILD | ES_CENTER | WS_BORDER, 100, 80, 600, 450, hWnd, NULL, NULL, NULL);
+    adminCourseManagement.syllabus = CreateWindow(TEXT("button"), TEXT("Create Syllabus"), WS_CHILD | ES_CENTER, 240, 170, 300, 80, hWnd, (HMENU)121, NULL, NULL);
+    adminCourseManagement.showCourses = CreateWindow(TEXT("button"), TEXT("See Courses"), WS_CHILD | ES_CENTER, 240, 270, 300, 80, hWnd, (HMENU)122, NULL, NULL);
+    adminCourseManagement.addCourse = CreateWindow(TEXT("button"), TEXT("Add Course"), WS_BORDER | WS_CHILD, 240, 370, 300, 80, hWnd, (HMENU)123, NULL, NULL);
+    adminCourseManagement.previous = CreateWindow(TEXT("button"), TEXT("Back"), WS_BORDER | WS_CHILD, 300, 480, 80, 30, hWnd, (HMENU)124, NULL, NULL);
+    adminCourseManagement.proceed = CreateWindow(TEXT("button"), TEXT("Exit"), WS_BORDER | WS_CHILD, 400, 480, 80, 30, hWnd, (HMENU)125, NULL, NULL);
+
+    // Apply fonts to controls
+    SendMessage(adminCourseManagement.header, WM_SETFONT, (WPARAM)hFontH1, TRUE);
+    SendMessage(adminCourseManagement.syllabus, WM_SETFONT, (WPARAM)hFontH2, TRUE);
+    SendMessage(adminCourseManagement.showCourses, WM_SETFONT, (WPARAM)hFontH2, TRUE);
+    SendMessage(adminCourseManagement.addCourse, WM_SETFONT, (WPARAM)hFontH2, TRUE);
+    SendMessage(adminCourseManagement.previous, WM_SETFONT, (WPARAM)hFontH3, TRUE);
+    SendMessage(adminCourseManagement.proceed, WM_SETFONT, (WPARAM)hFontH3, TRUE);
+
+}
+
+void WindowHandler::setAdminCourseManagementVisibility(bool visible) {
+    int cmdShow = visible ? SW_SHOW : SW_HIDE;
+    ShowWindow(adminCourseManagement.header, cmdShow);
+    ShowWindow(adminCourseManagement.syllabus, cmdShow);
+    ShowWindow(adminCourseManagement.showCourses, cmdShow);
+    ShowWindow(adminCourseManagement.addCourse, cmdShow);
+    ShowWindow(adminCourseManagement.previous, cmdShow);
+    ShowWindow(adminCourseManagement.proceed, cmdShow);
+}
+
+/* Teacher Management */
+void WindowHandler::createAdminTeacherManagementWindows(HWND hWnd) {
+    // Font style
+    HFONT hFontH1 = CreateFont(32, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
+    HFONT hFontH2 = CreateFont(32, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
+    HFONT hFontH3 = CreateFont(24, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
+
+    // Window Controls
+    adminTeacherManagement.header = CreateWindow(TEXT("static"), TEXT("- Administrator Panel -"), WS_CHILD | ES_CENTER | WS_BORDER, 100, 80, 600, 450, hWnd, NULL, NULL, NULL);
+    adminTeacherManagement.showTeachers = CreateWindow(TEXT("button"), TEXT("Manage Teachers"), WS_CHILD | ES_CENTER, 240, 170, 300, 80, hWnd, (HMENU)131, NULL, NULL);
+    adminTeacherManagement.addTeacher = CreateWindow(TEXT("button"), TEXT("Add Teacher"), WS_CHILD | ES_CENTER, 240, 270, 300, 80, hWnd, (HMENU)132, NULL, NULL);
+    adminTeacherManagement.previous = CreateWindow(TEXT("button"), TEXT("Back"), WS_BORDER | WS_CHILD, 300, 480, 80, 30, hWnd, (HMENU)133, NULL, NULL);
+    adminTeacherManagement.proceed = CreateWindow(TEXT("button"), TEXT("Exit"), WS_BORDER | WS_CHILD, 400, 480, 80, 30, hWnd, (HMENU)134, NULL, NULL);
+
+    // Apply fonts to controls
+    SendMessage(adminTeacherManagement.header, WM_SETFONT, (WPARAM)hFontH1, TRUE);
+    SendMessage(adminTeacherManagement.showTeachers, WM_SETFONT, (WPARAM)hFontH2, TRUE);
+    SendMessage(adminTeacherManagement.addTeacher, WM_SETFONT, (WPARAM)hFontH2, TRUE);
+    SendMessage(adminTeacherManagement.previous, WM_SETFONT, (WPARAM)hFontH3, TRUE);
+    SendMessage(adminTeacherManagement.proceed, WM_SETFONT, (WPARAM)hFontH3, TRUE);
+
+}
+
+void WindowHandler::setAdminTeacherManagementVisibility(bool visible) {
+    int cmdShow = visible ? SW_SHOW : SW_HIDE;
+    ShowWindow(adminTeacherManagement.header, cmdShow);
+    ShowWindow(adminTeacherManagement.showTeachers, cmdShow);
+    ShowWindow(adminTeacherManagement.addTeacher, cmdShow);
+    ShowWindow(adminTeacherManagement.previous, cmdShow);
+    ShowWindow(adminTeacherManagement.proceed, cmdShow);
+}
+
 /* Teacher Login */
 void WindowHandler::createTeacherLoginWindows(HWND hWnd) {
     // Font style

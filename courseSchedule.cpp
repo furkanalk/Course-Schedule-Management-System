@@ -107,6 +107,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     static courseSystem* userAdmin = new Admin(); // creating an Admin, but treating it as courseSystem
     static courseSystem* userTeacher = new Teacher(); // creating an Admin, but treating it as courseSystem
     static courseSystem* userStudent = new Student(); // creating an Admin, but treating it as courseSystem
+    Admin* actualAdmin = static_cast<Admin*>(userAdmin); // creating an Admin and can access its own functions
 
     switch (message)
     {
@@ -120,35 +121,64 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
                 switch (wmId)
                 {
+                /* Login Types */
                 case 401:
-                    // Admin Login Panel
+                    // Admin Login Panel (proceed)
                     userAdmin->login(hWnd);
                     break;
                 case 402:
-                    // Teacher Login Panel
+                    // go to Teacher Login Panel (proceed)
                     userTeacher->login(hWnd);
                     break;
                 case 403:
-                    // Student Login Panel
+                    // go to Student Login Panel (proceed)
                     userStudent->login(hWnd);
                     break;
+
+                /* Admin Login */
                 case 101:
-                    // Back to Login Types Menu
+                    // back to Login Types from Admin Login Panel (back)
                     cs.login(hWnd);
                     break;
                 case 102:
-                {
-                    // Proceed to Admin Interface
-                    Admin* actualAdmin = static_cast<Admin*>(userAdmin);
-
-                    // Now, we can call the function specific to the Admin class.
+                    // go to Admin Interface from Admin Login Panel (login)
                     actualAdmin->showInterface(hWnd);
                     break;
-                }
+
+                /* Admin Interface */
+                case 111:
+                    // go to Course Management from Admin Interface (proceed)
+                    actualAdmin->courseManagement(hWnd);
+                    break;
+                case 112:
+                    // go to Teacher Management from Admin Interface (proceed)
+                    actualAdmin->teacherManagement(hWnd);
+                    break;
                 case 114:
-                    // Back to Login Types Menu
+                    // back to Login Types from Admin Interface (exit)
                     cs.login(hWnd);
                     break;
+
+                /* Course Management */
+                case 124:
+                    // back to Admin Interface from Course Management (back)
+                    actualAdmin->showInterface(hWnd);
+                    break;
+                case 125:
+                    // back to Login Types from Course Management (exit)
+                    cs.login(hWnd);
+                    break;
+
+                /* Teacher Management */
+                case 133:
+                    // back to Admin Interface from Teacher Management (back)
+                    actualAdmin->showInterface(hWnd);
+                    break;
+                case 134:
+                    // back to Login Types from Teacher Management (exit)
+                    cs.login(hWnd);
+                    break;
+
                 case 201:
                     // Back to Login Types Menu
                     cs.login(hWnd);
