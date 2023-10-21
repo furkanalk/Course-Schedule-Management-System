@@ -98,6 +98,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
 
+    SetWindowText(hWnd, L"Beykoz - Course Schedule Management");
+
     return TRUE;
 }
 
