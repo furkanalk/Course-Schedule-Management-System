@@ -1,17 +1,17 @@
-﻿#include "courseSchedule.h"
+﻿#include "course.h"
 #include "handlers.h"
 
 // Setters
 void courseSystem::setName(std::string username) { this->username = username; }
 void courseSystem::setGender(std::string gender) { this->gender = gender; }
-void courseSystem::setId(std::string id) { this->id = id; }
-void courseSystem::setAge(std::string age) { this->age = age; }
+void courseSystem::setId(int id) { this->id = id; }
+void courseSystem::setAge(int age) { this->age = age; }
 
 // Getters
 std::string courseSystem::getUsername() { return username; }
 std::string courseSystem::getGender() { return gender; }
-std::string courseSystem::getId() { return id; }
-std::string courseSystem::getAge() { return age; }
+int courseSystem::getId() { return id; }
+int courseSystem::getAge() { return age; }
 
 std::wstring courseSystem::convertToWideString(const std::string& str) {
 	int bufferLength = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, NULL, 0);
@@ -34,30 +34,6 @@ void courseSystem::login(HWND hWnd) {
 	wh.setAdminInterfaceVisibility(false);
 	wh.setAdminCourseManagementVisibility(false);
 	wh.setAdminTeacherManagementVisibility(false);
-
-	sqlite3* DB;
-	std::string url = "courseScheduleDB.sqlite";
-
-	int exit = 0;
-	exit = sqlite3_open(url.c_str(), &DB);
-
-	if (exit != SQLITE_OK) {
-		std::string errorMsg = "Error opening database: ";
-		errorMsg += sqlite3_errmsg(DB);
-		std::wstring wideErrorMsg = convertToWideString(errorMsg);
-
-		MessageBox(
-			NULL,
-			wideErrorMsg.c_str(),
-			L"Database Error", 
-			MB_ICONERROR | MB_OK 
-		);
-
-		sqlite3_close(DB);
-	}
-	else {
-		// Database opened
-	}
 
 	// SHOW Login Type	
 	if (!wh.isWindowCreated("loginType")) {
@@ -128,7 +104,7 @@ void Admin::teacherManagement(HWND hWnd) {
 }
 
 /* Admin add teacher */
-void Admin::addTeacher(HWND hWnd) {
+void Admin::teacherAdd(HWND hWnd) {
 	WindowHandler& wh = wh.getInstance();
 
 	// Hide Teacher Management
@@ -139,6 +115,14 @@ void Admin::addTeacher(HWND hWnd) {
 		wh.createAdminAddTeacherWindows(hWnd);
 	}
 	wh.setAdminAddTeacherVisibility(true);
+}
+
+/* Admin add teacher */
+void Admin::teacherInsertToDB(HWND hWnd) {
+	WindowHandler& wh = wh.getInstance();
+
+	// Add teacher to DB
+	wh.insertTeacherIntoDatabase(hWnd);
 }
 
 /* Teacher Login wnd */

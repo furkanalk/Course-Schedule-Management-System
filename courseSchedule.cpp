@@ -1,5 +1,5 @@
 #include "framework.h"
-#include "courseSchedule.h"
+#include "course.h"
 #include "resource.h"
 #include "windows.h"
 
@@ -136,7 +136,7 @@ void HandleAdminLogin(int wmId, HWND hWnd, Admin* actualAdmin, courseSystem& cs)
         /* Teacher Management */
     case 132:
         // go to Admin Add Teacher from Teacher Management (proceed)
-        actualAdmin->addTeacher(hWnd);
+        actualAdmin->teacherAdd(hWnd);
         break;
     case 133:
         // back to Admin Interface from Teacher Management (back)
@@ -151,6 +151,10 @@ void HandleAdminLogin(int wmId, HWND hWnd, Admin* actualAdmin, courseSystem& cs)
     case 141:
         // back to Teacher Management from Add Teacher (back)
         actualAdmin->teacherManagement(hWnd);
+        break;
+    case 142:
+        // insert a new Teacher to Database (insert)
+        actualAdmin->teacherInsertToDB(hWnd);
         break;
     }
 }

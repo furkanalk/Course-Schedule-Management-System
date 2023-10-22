@@ -62,6 +62,19 @@ class WindowHandler {
         AdminCourseManagement() : header(nullptr), syllabus(nullptr), showCourses(nullptr), addCourse(nullptr), previous(nullptr), proceed(nullptr) {}
     } adminCourseManagement;
 
+    struct AdminAddCourse {
+        // Window Handlers
+        HWND header;
+        HWND course;
+        HWND showCourses;
+        HWND addCourse;
+        HWND previous;
+        HWND proceed;
+
+        // Set all windows to NULL by default
+        AdminAddCourse() : header(nullptr), syllabus(nullptr), showCourses(nullptr), addCourse(nullptr), previous(nullptr), proceed(nullptr) {}
+    } adminAddCourse;
+
     struct AdminTeacherManagement {
         // Window Handlers
         HWND header;
@@ -170,6 +183,7 @@ public:
     // Teacher Login
     void createTeacherLoginWindows(HWND hWnd);
     void setTeacherLoginVisibility(bool isVisible);
+    void insertTeacherIntoDatabase(HWND hWnd);
 
     // Student Login
     void createStudentLoginWindows(HWND hWnd);

@@ -1,7 +1,10 @@
 ﻿#include "handlers.h"
+#include "SQLiteHandler.h"
 #include <tchar.h>
+#include <string>
+#include <vector>
 
-// Constructor to set the default values of window status' to FALSE and windows to NULL
+// Constructor to set the default values of window status' to FALSE and windows' to NULL
 WindowHandler::WindowHandler() {
     windowCreationStatus["loginType"] = false;
     windowCreationStatus["adminLogin"] = false;
@@ -11,17 +14,78 @@ WindowHandler::WindowHandler() {
     windowCreationStatus["studentLogin"] = false;
 }
 
+// Set window to created
 void WindowHandler::setWindowCreated(const std::string& windowName, bool isCreated) {
     windowCreationStatus[windowName] = isCreated;
 }
 
+// Check if the window is already created
 bool WindowHandler::isWindowCreated(const std::string& windowName) {
-    if (windowCreationStatus.find(windowName) != windowCreationStatus.end()) {
+    if (windowCreationStatus.find(windowName) != windowCreationStatus.end())
         return windowCreationStatus[windowName];
+    else
+        return false;
+}
+
+// Insert Teacher to DB
+void WindowHandler::insertTeacherIntoDatabase(HWND hWnd) {
+    const size_t BUFFER_SIZE = 255;
+    TCHAR fullname[BUFFER_SIZE];
+    TCHAR course[BUFFER_SIZE];
+
+    GetWindowText(adminAddTeacher.fullnameInput, fullname, BUFFER_SIZE);
+    GetWindowText(adminAddTeacher.courseInput, course, BUFFER_SIZE);
+
+    // Checkbox for work days
+    int monday = 0, tuesday = 0, wednesday = 0, thursday = 0, friday = 0, saturday = 0;
+
+    if (IsDlgButtonChecked(hWnd, GetDlgCtrlID(adminAddTeacher.monday)) == BST_CHECKED) {
+        monday = 1;
+    }
+    if (IsDlgButtonChecked(hWnd, GetDlgCtrlID(adminAddTeacher.tuesday)) == BST_CHECKED) {
+        tuesday = 1;
+    }
+    if (IsDlgButtonChecked(hWnd, GetDlgCtrlID(adminAddTeacher.wednesday)) == BST_CHECKED) {
+        wednesday = 1;
+    }
+    if (IsDlgButtonChecked(hWnd, GetDlgCtrlID(adminAddTeacher.thursday)) == BST_CHECKED) {
+        thursday = 1;
+    }
+    if (IsDlgButtonChecked(hWnd, GetDlgCtrlID(adminAddTeacher.friday)) == BST_CHECKED) {
+        friday = 1;
+    }
+    if (IsDlgButtonChecked(hWnd, GetDlgCtrlID(adminAddTeacher.saturday)) == BST_CHECKED) {
+        saturday = 1;
+    }
+
+    // Check if inputs are valid and at least a work day is selected.
+    if (wcslen(fullname) == 0 || wcslen(course) == 0) {
+        MessageBox(NULL, TEXT("Full name and course cannot be empty!"), TEXT("Error"), MB_OK | MB_ICONERROR);
+        return;
+    }
+    if (monday + tuesday + wednesday + thursday + friday + saturday == 0) {
+        MessageBox(NULL, TEXT("At least one workday must be selected!"), TEXT("Error"), MB_OK | MB_ICONERROR);
+        return;
+    }
+
+    // Convert from wide characters to UTF-8
+    std::string fullname_utf8(fullname, fullname + wcslen(fullname));
+    std::string course_utf8(course, course + wcslen(course));
+
+    SQLiteHandler sqliteHandler("courseScheduleDB.sqlite");
+    if (!sqliteHandler.openDatabase()) {
+        MessageBox(NULL, TEXT("Failed to open database!"), TEXT("Error"), MB_OK | MB_ICONERROR);
+        return;
+    }
+
+    if (!sqliteHandler.insertTeacher(fullname_utf8, course_utf8, monday, tuesday, wednesday, thursday, friday, saturday)) {
+        MessageBox(NULL, TEXT("Failed to insert data!"), TEXT("Error"), MB_OK | MB_ICONERROR);
     }
     else {
-        return false;
+        MessageBox(NULL, TEXT("Data inserted successfully!"), TEXT("Success"), MB_OK | MB_ICONINFORMATION);
     }
+
+    sqliteHandler.closeDatabase();
 }
 
 /* Login Type */
@@ -201,12 +265,12 @@ void WindowHandler::createAdminAddTeacherWindows(HWND hWnd) {
     adminAddTeacher.course = CreateWindow(TEXT("static"), TEXT("Course ="), WS_CHILD | ES_CENTER, 230, 200, 120, 20, hWnd, NULL, NULL, NULL);
     adminAddTeacher.courseInput = CreateWindow(TEXT("EDIT"), TEXT(""), WS_BORDER | WS_CHILD, 350, 200, 220, 25, hWnd, NULL, NULL, NULL);
     adminAddTeacher.headerSecond = CreateWindow(TEXT("static"), TEXT("Work Days"), WS_CHILD | ES_CENTER, 320, 250, 160, 40, hWnd, NULL, NULL, NULL);
-    adminAddTeacher.monday = CreateWindow(TEXT("button"), TEXT("Monday"), WS_CHILD | ES_CENTER | BS_CHECKBOX, 360, 300, 160, 20, hWnd, NULL, NULL, NULL);
-    adminAddTeacher.tuesday = CreateWindow(TEXT("button"), TEXT("Tuesday"), WS_CHILD | ES_CENTER | BS_CHECKBOX, 360, 320, 160, 20, hWnd, NULL, NULL, NULL);
-    adminAddTeacher.wednesday = CreateWindow(TEXT("button"), TEXT("Wednesday"), WS_CHILD | ES_CENTER | BS_CHECKBOX, 360, 340, 160, 20, hWnd, NULL, NULL, NULL);
-    adminAddTeacher.thursday = CreateWindow(TEXT("button"), TEXT("Thursday"), WS_CHILD | ES_CENTER | BS_CHECKBOX, 360, 360, 160, 20, hWnd, NULL, NULL, NULL);
-    adminAddTeacher.friday = CreateWindow(TEXT("button"), TEXT("Friday"), WS_CHILD | ES_CENTER | BS_CHECKBOX, 360, 380, 160, 20, hWnd, NULL, NULL, NULL);
-    adminAddTeacher.saturday = CreateWindow(TEXT("button"), TEXT("Saturday"), WS_CHILD | ES_CENTER | BS_CHECKBOX, 360, 400, 160, 20, hWnd, NULL, NULL, NULL);
+    adminAddTeacher.monday = CreateWindow(TEXT("button"), TEXT("Monday"), WS_CHILD | ES_CENTER | BS_CHECKBOX, 360, 300, 160, 20, hWnd, (HMENU)143, NULL, NULL);
+    adminAddTeacher.tuesday = CreateWindow(TEXT("button"), TEXT("Tuesday"), WS_CHILD | ES_CENTER | BS_CHECKBOX, 360, 320, 160, 20, hWnd, (HMENU)144, NULL, NULL);
+    adminAddTeacher.wednesday = CreateWindow(TEXT("button"), TEXT("Wednesday"), WS_CHILD | ES_CENTER | BS_CHECKBOX, 360, 340, 160, 20, hWnd, (HMENU)145, NULL, NULL);
+    adminAddTeacher.thursday = CreateWindow(TEXT("button"), TEXT("Thursday"), WS_CHILD | ES_CENTER | BS_CHECKBOX, 360, 360, 160, 20, hWnd, (HMENU)146, NULL, NULL);
+    adminAddTeacher.friday = CreateWindow(TEXT("button"), TEXT("Friday"), WS_CHILD | ES_CENTER | BS_CHECKBOX, 360, 380, 160, 20, hWnd, (HMENU)147, NULL, NULL);
+    adminAddTeacher.saturday = CreateWindow(TEXT("button"), TEXT("Saturday"), WS_CHILD | ES_CENTER | BS_CHECKBOX, 360, 400, 160, 20, hWnd, (HMENU)148, NULL, NULL);
     adminAddTeacher.previous = CreateWindow(TEXT("button"), TEXT("Back"), WS_BORDER | WS_CHILD, 300, 480, 80, 30, hWnd, (HMENU)141, NULL, NULL);
     adminAddTeacher.insert = CreateWindow(TEXT("button"), TEXT("Add"), WS_BORDER | WS_CHILD, 400, 480, 80, 30, hWnd, (HMENU)142, NULL, NULL);
 

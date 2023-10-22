@@ -1,5 +1,5 @@
-#ifndef COURSESCHEDULE_H
-#define COURSESCHEDULE_H
+#ifndef COURSE_H
+#define COURSE_H
 
 #include <iostream>
 #include <string>
@@ -11,22 +11,22 @@
 class courseSystem {
 	std::string username; // Login name holder
 	std::string gender; // Login gender holder
-	std::string id;  // Login id holder
-	std::string age; // Login age holder
+	int id;  // Login id holder
+	int age; // Login age holder
 
 protected:
 	/* Setters */
 	void setName(std::string username);
 	void setGender(std::string gender);
-	void setId(std::string id);
-	void setAge(std::string age);
+	void setId(int id);
+	void setAge(int age);
 
 public:
 	/* Getters */
 	std::string getUsername();
 	std::string getGender();
-	std::string getId();
-	std::string getAge();
+	int getId();
+	int getAge();
 
 	/* Convert to Wide String */
 	std::wstring convertToWideString(const std::string& str);
@@ -42,7 +42,8 @@ public:
 	void showInterface(HWND hWnd);
 	void courseManagement(HWND hWnd);
 	void teacherManagement(HWND hWnd);
-	void addTeacher(HWND hWnd);
+	void teacherAdd(HWND hWnd);
+	void teacherInsertToDB(HWND hWnd);
 };
 
 class Teacher : public courseSystem {
