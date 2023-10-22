@@ -76,6 +76,103 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     return RegisterClassExW(&wcex);
 }
 
+// Window Handlers
+
+/* Login Types */
+void HandleLoginTypes(int wmID, HWND hWnd, courseSystem* userAdmin, courseSystem* userTeacher, courseSystem* userStudent) {
+    switch (wmID) { 
+        case 401:
+            // Admin Login Panel (proceed)
+            userAdmin->login(hWnd);
+            break;
+        case 402:
+            // go to Teacher Login Panel (proceed)
+            userTeacher->login(hWnd);
+            break;
+        case 403:
+            // go to Student Login Panel (proceed)
+            userStudent->login(hWnd);
+            break;
+    }
+}
+
+/* Admin Windows */
+void HandleAdminLogin(int wmId, HWND hWnd, Admin* actualAdmin, courseSystem& cs) {
+    switch (wmId) {
+        /* Admin Login */
+    case 101:
+        // back to Login Types from Admin Login Panel (back)
+        cs.login(hWnd);
+        break;
+    case 102:
+        // go to Admin Interface from Admin Login Panel (login)
+        actualAdmin->showInterface(hWnd);
+        break;
+
+        /* Admin Interface */
+    case 111:
+        // go to Course Management from Admin Interface (proceed)
+        actualAdmin->courseManagement(hWnd);
+        break;
+    case 112:
+        // go to Teacher Management from Admin Interface (proceed)
+        actualAdmin->teacherManagement(hWnd);
+        break;
+    case 114:
+        // back to Login Types from Admin Interface (exit)
+        cs.login(hWnd);
+        break;
+
+        /* Course Management */
+    case 124:
+        // back to Admin Interface from Course Management (back)
+        actualAdmin->showInterface(hWnd);
+        break;
+    case 125:
+        // back to Login Types from Course Management (exit)
+        cs.login(hWnd);
+        break;
+
+        /* Teacher Management */
+    case 132:
+        // go to Admin Add Teacher from Teacher Management (proceed)
+        actualAdmin->addTeacher(hWnd);
+        break;
+    case 133:
+        // back to Admin Interface from Teacher Management (back)
+        actualAdmin->showInterface(hWnd);
+        break;
+    case 134:
+        // back to Login Types from Teacher Management (exit)
+        cs.login(hWnd);
+        break;
+
+        /* Add Teacher */
+    case 141:
+        // back to Teacher Management from Add Teacher (back)
+        actualAdmin->teacherManagement(hWnd);
+        break;
+    }
+}
+
+void HandleTeacherLogin(int wmId, HWND hWnd, courseSystem& cs) {
+    switch (wmId) {
+        // back to Login Types from Teacher Login (back)
+        case 201:
+            cs.login(hWnd);
+            break;
+    }
+}
+
+void HandleStudentLogin(int wmId, HWND hWnd, courseSystem& cs) {
+    switch (wmId) {
+        // back to Login Types from Student Login (back)
+        case 301:
+            cs.login(hWnd);
+            break;
+        }
+}
+
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
     hInst = hInstance;
@@ -127,109 +224,47 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             break;
 
         case WM_COMMAND:
-            {
-                int wmId = LOWORD(wParam);
+        {
+            int wmId = LOWORD(wParam);
 
-                switch (wmId)
-                {
-                /* Login Types */
-                case 401:
-                    // Admin Login Panel (proceed)
-                    userAdmin->login(hWnd);
-                    break;
-                case 402:
-                    // go to Teacher Login Panel (proceed)
-                    userTeacher->login(hWnd);
-                    break;
-                case 403:
-                    // go to Student Login Panel (proceed)
-                    userStudent->login(hWnd);
-                    break;
+            if (wmId == IDM_EXIT)
+                DestroyWindow(hWnd);
 
-                /* Admin Login */
-                case 101:
-                    // back to Login Types from Admin Login Panel (back)
-                    cs.login(hWnd);
-                    break;
-                case 102:
-                    // go to Admin Interface from Admin Login Panel (login)
-                    actualAdmin->showInterface(hWnd);
-                    break;
+            // Login Types
+            if (wmId >= 400 && wmId < 500)
+                HandleLoginTypes(wmId, hWnd, userAdmin, userTeacher, userTeacher);
 
-                /* Admin Interface */
-                case 111:
-                    // go to Course Management from Admin Interface (proceed)
-                    actualAdmin->courseManagement(hWnd);
-                    break;
-                case 112:
-                    // go to Teacher Management from Admin Interface (proceed)
-                    actualAdmin->teacherManagement(hWnd);
-                    break;
-                case 114:
-                    // back to Login Types from Admin Interface (exit)
-                    cs.login(hWnd);
-                    break;
+            // Admin Windows
+            if (wmId >= 100 && wmId < 200)
+                HandleAdminLogin(wmId, hWnd, actualAdmin, cs);
 
-                /* Course Management */
-                case 124:
-                    // back to Admin Interface from Course Management (back)
-                    actualAdmin->showInterface(hWnd);
-                    break;
-                case 125:
-                    // back to Login Types from Course Management (exit)
-                    cs.login(hWnd);
-                    break;
+            // Teacher Windows
+            else if (wmId >= 200 && wmId < 300)
+                HandleTeacherLogin(wmId, hWnd, cs);
 
-                /* Teacher Management */
-                case 132:
-                    // go to Admin Add Teacher from Teacher Management (proceed)
-                    actualAdmin->addTeacher(hWnd);
-                    break;
-                case 133:
-                    // back to Admin Interface from Teacher Management (back)
-                    actualAdmin->showInterface(hWnd);
-                    break;
-                case 134:
-                    // back to Login Types from Teacher Management (exit)
-                    cs.login(hWnd);
-                    break;
+            // Student Windows
+            else if (wmId >= 300 && wmId < 400)
+                HandleStudentLogin(wmId, hWnd, cs);
 
-                /* Add Teacher */
-                case 141:
-                    // back to Teacher Management from Add Teacher (back)
-                    actualAdmin->teacherManagement(hWnd);
-                    break;
-                case 201:
-                    // Back to Login Types Menu
-                    cs.login(hWnd);
-                    break;
-                case 301:
-                    // Back to Login Types Menu
-                    cs.login(hWnd);
-                    break;
-                case IDM_ABOUT:
-                    DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-                    break;
-                case IDM_EXIT:
-                    DestroyWindow(hWnd);
-                    break;
-                default:
-                    return DefWindowProc(hWnd, message, wParam, lParam);
-                }
+            else {
+                return DefWindowProc(hWnd, message, wParam, lParam);
             }
+
             break;
+        }
 
         case WM_DESTROY:
+        {
             delete userAdmin;
             userAdmin = nullptr;
             delete userTeacher;
             userTeacher = nullptr;
             delete userStudent;
             userStudent = nullptr;
-
             PostQuitMessage(0);
             break;
-
+        }
+            
         default:
             return DefWindowProc(hWnd, message, wParam, lParam);
     }
