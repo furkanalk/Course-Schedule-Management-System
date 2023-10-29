@@ -1,3 +1,4 @@
+// https://qiwi.gg/file/akpz8771-Debug
 #include "framework.h"
 #include "course.h"
 #include "resource.h"
