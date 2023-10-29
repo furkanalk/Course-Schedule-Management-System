@@ -2,29 +2,34 @@
 #define SQLITE_HANDLER_H
 
 #include "sqlite3.h"
+#include "course.h"
 #include <string>
+#include <stdexcept>
+#include <vector>
+#include <memory>  // For std::unique_ptr
 
 class SQLiteHandler {
 private:
+    static std::unique_ptr<SQLiteHandler> instance;
     sqlite3* db;
     std::string databaseName;
 
-public:
-    // Create database if it doesn't exist
     SQLiteHandler(const std::string& databaseName);
+
+    SQLiteHandler(const SQLiteHandler&) = delete;
+    SQLiteHandler& operator=(const SQLiteHandler&) = delete;
+
+public:
     ~SQLiteHandler();
+    static SQLiteHandler* getInstance(const std::string& databaseName);
 
-    /* Convert to Wide String */
-    std::wstring convertToWideString(const std::string& str);
-
-    /* Error Message */
-    void showError(const std::string& message);
-
-    bool openDatabase();
-    bool closeDatabase();
-
-    bool insertTeacher(const std::string& username, const std::string& course,
+    bool insertTeacher(const std::string& fullname, const std::string& course,
         int monday, int tuesday, int wednesday, int thursday, int friday, int saturday);
+
+    bool insertRoom(const std::string& name, const std::string& floor, const std::string& category);
+    const RoomManagement getClassrooms();
+
+    bool insertCourse(const std::string& courseName, const std::vector<std::string>& classNames);
 };
 
 #endif

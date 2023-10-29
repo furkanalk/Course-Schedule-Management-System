@@ -2,6 +2,7 @@
 #include "course.h"
 #include "resource.h"
 #include "windows.h"
+#include <memory>
 
 #define MAX_LOADSTRING 100
 
@@ -79,100 +80,159 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 // Window Handlers
 
 /* Login Types */
-void HandleLoginTypes(int wmID, HWND hWnd, courseSystem* userAdmin, courseSystem* userTeacher, courseSystem* userStudent) {
+void HandleLoginTypes(int wmID, HWND hWnd, Admin& userAdmin, User& userTeacher, User& userStudent) {
     switch (wmID) { 
         case 401:
-            // Admin Login Panel (proceed)
-            userAdmin->login(hWnd);
+            userAdmin.login(hWnd);
             break;
         case 402:
-            // go to Teacher Login Panel (proceed)
-            userTeacher->login(hWnd);
+            userTeacher.showInterface(hWnd);
             break;
         case 403:
-            // go to Student Login Panel (proceed)
-            userStudent->login(hWnd);
+            userStudent.showInterface(hWnd);
             break;
     }
 }
 
 /* Admin Windows */
-void HandleAdminLogin(int wmId, HWND hWnd, Admin* actualAdmin, courseSystem& cs) {
+void HandleAdminLogin(int wmId, HWND hWnd, Admin& actualAdmin,
+    User& userAdmin, User& userTeacher, User& userStudent, User& user) {
+    
+    static std::unique_ptr<User> gradeMngt = std::make_unique<GradeManagement>();
+    static std::unique_ptr<User> roomMngt = std::make_unique<RoomManagement>();
+    static std::unique_ptr<User> courseMngt = std::make_unique<CourseManagement>();
+    static std::unique_ptr<User> teacherMngt = std::make_unique<TeacherManagement>();
+
+    static std::unique_ptr<Admin> courseData = std::make_unique<CourseManagement>();
+    static std::unique_ptr<Admin> teacherData = std::make_unique<TeacherManagement>();
+    static std::unique_ptr<Admin> gradeData = std::make_unique<GradeManagement>();
+    static std::unique_ptr<Admin> roomData = std::make_unique<RoomManagement>();
+
     switch (wmId) {
         /* Admin Login */
     case 101:
         // back to Login Types from Admin Login Panel (back)
-        cs.login(hWnd);
+        user.showInterface(hWnd);
         break;
     case 102:
         // go to Admin Interface from Admin Login Panel (login)
-        actualAdmin->showInterface(hWnd);
+        userAdmin.showInterface(hWnd);
         break;
 
         /* Admin Interface */
     case 111:
         // go to Course Management from Admin Interface (proceed)
-        actualAdmin->courseManagement(hWnd);
+        courseMngt->showInterface(hWnd);
         break;
     case 112:
         // go to Teacher Management from Admin Interface (proceed)
-        actualAdmin->teacherManagement(hWnd);
+        teacherMngt->showInterface(hWnd);
+        break;
+    case 113:
+        // go to Room Management from Admin Interface (proceed)
+        roomMngt->showInterface(hWnd);
         break;
     case 114:
         // back to Login Types from Admin Interface (exit)
-        cs.login(hWnd);
+        user.showInterface(hWnd);
         break;
 
         /* Course Management */
+    case 123:
+        // go to Add Course from Course Management (back)
+        courseData->addData(hWnd);
+        break;
     case 124:
         // back to Admin Interface from Course Management (back)
-        actualAdmin->showInterface(hWnd);
+        userAdmin.showInterface(hWnd);
         break;
     case 125:
         // back to Login Types from Course Management (exit)
-        cs.login(hWnd);
+        user.showInterface(hWnd);
+        break;
+
+        /* Add Course */
+    case 151:
+        // back to Course Management from Add Course (back)
+        courseMngt->showInterface(hWnd);
+        break;
+    case 152:
+        // insert a new Course to Database (insert)
+        courseData->insertToDB(hWnd);
         break;
 
         /* Teacher Management */
     case 132:
         // go to Admin Add Teacher from Teacher Management (proceed)
-        actualAdmin->teacherAdd(hWnd);
+        teacherData->addData(hWnd);
         break;
     case 133:
-        // back to Admin Interface from Teacher Management (back)
-        actualAdmin->showInterface(hWnd);
+        // back to Teacher Management from Teacher Add (back)
+        userAdmin.showInterface(hWnd);
         break;
     case 134:
         // back to Login Types from Teacher Management (exit)
-        cs.login(hWnd);
+        user.showInterface(hWnd);
         break;
 
         /* Add Teacher */
     case 141:
         // back to Teacher Management from Add Teacher (back)
-        actualAdmin->teacherManagement(hWnd);
+        teacherMngt->showInterface(hWnd);
         break;
     case 142:
         // insert a new Teacher to Database (insert)
-        actualAdmin->teacherInsertToDB(hWnd);
+        teacherData->insertToDB(hWnd);
         break;
+
+        /* Classroom Management */
+    case 161:
+        // go to Add Course from Course Management (back)
+        roomMngt->manageData(hWnd);
+        break;
+    case 162:
+        // go to Add Room from Room Management (back)
+        roomData->addData(hWnd);
+        break;
+    case 163:
+        // back to Admin Interface from Room Management (back)
+        userAdmin.showInterface(hWnd);
+        break;
+    case 164:
+        // back to Login Types from Room Management (exit)
+        user.showInterface(hWnd);
+        break;
+
+        /* Add Classroom */
+    case 171:
+        // back to Classroom Management from Room Management (back)
+        roomMngt->showInterface(hWnd);
+        break;
+    case 172:
+        // back to Classroom Management from Room Management (back)
+        roomData->insertToDB(hWnd);
+        break;
+    //case 172:
+    //    // back to Login Types from Room Management (exit)
+    //    user.showInterface(hWnd);
+    //    break;  
     }
 }
 
-void HandleTeacherLogin(int wmId, HWND hWnd, courseSystem& cs) {
+void HandleTeacherLogin(int wmId, HWND hWnd, User& user) {
     switch (wmId) {
         // back to Login Types from Teacher Login (back)
         case 201:
-            cs.login(hWnd);
+            user.showInterface(hWnd);
             break;
     }
 }
 
-void HandleStudentLogin(int wmId, HWND hWnd, courseSystem& cs) {
+void HandleStudentLogin(int wmId, HWND hWnd, User& user) {
     switch (wmId) {
         // back to Login Types from Student Login (back)
         case 301:
-            cs.login(hWnd);
+            user.showInterface(hWnd);
             break;
         }
 }
@@ -208,69 +268,74 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     static HBRUSH hbrBkgnd = CreateSolidBrush(RGB(200, 200, 255));
 
-    static courseSystem cs; // creating an Admin, but treating it as courseSystem
-    static courseSystem* userAdmin = new Admin(); // creating an Admin, but treating it as courseSystem
-    static courseSystem* userTeacher = new Teacher(); // creating an Admin, but treating it as courseSystem
-    static courseSystem* userStudent = new Student(); // creating an Admin, but treating it as courseSystem
-    Admin* actualAdmin = static_cast<Admin*>(userAdmin); // creating an Admin and can access its own functions
+    // Parent
+    static User user;
+    // User's children
+    static std::unique_ptr<User> userAdmin = std::make_unique<Admin>();
+    static std::unique_ptr<User> userTeacher = std::make_unique<Teacher>();
+    static std::unique_ptr<User> userStudent = std::make_unique<Student>();
+
+    auto* actualAdmin = dynamic_cast<Admin*>(userAdmin.get());
 
     switch (message)
-    {   
-        case WM_CTLCOLORSTATIC:
-        {
-            HDC hdcStatic = (HDC)wParam;
-            SetBkColor(hdcStatic, RGB(200, 200, 255));
-            return (INT_PTR)hbrBkgnd;
+    {
+    case WM_CTLCOLORSTATIC:
+    {
+        HDC hdcStatic = (HDC)wParam;
+        SetBkColor(hdcStatic, RGB(200, 200, 255));
+        return (INT_PTR)hbrBkgnd;
+    }
+
+    case WM_CREATE:
+        user.showInterface(hWnd);
+        break;
+
+    case WM_COMMAND:
+    {
+        int wmId = LOWORD(wParam);
+
+        if (wmId == 180 && HIWORD(wParam) == LBN_SELCHANGE) {
+            HWND hListBox = GetDlgItem(hWnd, 180);
+
+            int selectedCount = SendMessage(hListBox, LB_GETSELCOUNT, 0, 0);
+
+            if (selectedCount > 2)
+                MessageBox(hWnd, L"Only two selections are allowed.", L"Selection Limit", MB_ICONWARNING | MB_OK);
         }
 
-        case WM_CREATE:
-            cs.login(hWnd);
-            break;
+        if (wmId == IDM_EXIT)
+            DestroyWindow(hWnd);
 
-        case WM_COMMAND:
-        {
-            int wmId = LOWORD(wParam);
+        // Login Types
+        if (wmId >= 400 && wmId < 500)
+            HandleLoginTypes(wmId, hWnd, *actualAdmin, *userTeacher, *userStudent);
 
-            if (wmId == IDM_EXIT)
-                DestroyWindow(hWnd);
+        // Admin Windows
+        if (wmId >= 100 && wmId < 200)
+            HandleAdminLogin(wmId, hWnd, *actualAdmin, *userAdmin, *userTeacher, *userStudent, user);
 
-            // Login Types
-            if (wmId >= 400 && wmId < 500)
-                HandleLoginTypes(wmId, hWnd, userAdmin, userTeacher, userTeacher);
+        // Teacher Windows
+        else if (wmId >= 200 && wmId < 300)
+            HandleTeacherLogin(wmId, hWnd, user);
 
-            // Admin Windows
-            if (wmId >= 100 && wmId < 200)
-                HandleAdminLogin(wmId, hWnd, actualAdmin, cs);
+        // Grade Windows
+        else if (wmId >= 300 && wmId < 400)
+            HandleStudentLogin(wmId, hWnd, user);
 
-            // Teacher Windows
-            else if (wmId >= 200 && wmId < 300)
-                HandleTeacherLogin(wmId, hWnd, cs);
-
-            // Student Windows
-            else if (wmId >= 300 && wmId < 400)
-                HandleStudentLogin(wmId, hWnd, cs);
-
-            else {
-                return DefWindowProc(hWnd, message, wParam, lParam);
-            }
-
-            break;
-        }
-
-        case WM_DESTROY:
-        {
-            delete userAdmin;
-            userAdmin = nullptr;
-            delete userTeacher;
-            userTeacher = nullptr;
-            delete userStudent;
-            userStudent = nullptr;
-            PostQuitMessage(0);
-            break;
-        }
-            
-        default:
+        else 
             return DefWindowProc(hWnd, message, wParam, lParam);
+       
+        break;
+    }
+
+    case WM_DESTROY:
+    {
+        PostQuitMessage(0);
+        break;
+    }
+
+    default:
+        return DefWindowProc(hWnd, message, wParam, lParam);
     }
     return 0;
 }
