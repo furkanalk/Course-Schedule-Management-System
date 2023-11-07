@@ -6,10 +6,10 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <memory>
 
 class WindowHandler {
-    WindowHandler();
-
+    static std::unique_ptr<WindowHandler> instance;
     std::map<std::string, bool> windowCreationStatus;
 
     /* Main Menu */
@@ -188,15 +188,14 @@ class WindowHandler {
     } studentLogin;
 
 public:
+    WindowHandler();
+
     // Singleton
     WindowHandler(const WindowHandler&) = delete;
     WindowHandler& operator=(const WindowHandler&) = delete;
 
     // Create an instance of the object
-    static WindowHandler& getInstance() {
-        static WindowHandler instance;
-        return instance;
-    }
+    static WindowHandler* getInstance();
 
     /* Convert to Wide String */
     std::wstring convertToWideString(const std::string& str);

@@ -18,23 +18,23 @@
 
 /* Main wnd */
 void User::showInterface(HWND hWnd) {
-	WindowHandler& wh = wh.getInstance();
+	WindowHandler* wh = WindowHandler::getInstance();
 
 	/* Hide other windows */
 	// Login Types
-	wh.setAdminLoginVisibility(false);
-	wh.setTeacherLoginVisibility(false);
-	wh.setStudentLoginVisibility(false);
+	wh->setAdminLoginVisibility(false);
+	wh->setTeacherLoginVisibility(false);
+	wh->setStudentLoginVisibility(false);
 	// Admin
-	wh.setAdminInterfaceVisibility(false);
-	wh.setAdminCourseManagementVisibility(false);
-	wh.setAdminTeacherManagementVisibility(false);
+	wh->setAdminInterfaceVisibility(false);
+	wh->setAdminCourseManagementVisibility(false);
+	wh->setAdminTeacherManagementVisibility(false);
 
 	// SHOW Login Type	
-	if (!wh.isWindowCreated("loginType")) {
-		wh.createLoginTypeWindows(hWnd);
+	if (!wh->isWindowCreated("loginType")) {
+		wh->createLoginTypeWindows(hWnd);
 	}
-	wh.setLoginTypeVisibility(true);
+	wh->setLoginTypeVisibility(true);
 }
 
 void User::manageData(HWND hWnd) {
@@ -45,33 +45,33 @@ void User::manageData(HWND hWnd) {
 
 /* Admin Login wnd Wnd */
 void Admin::login(HWND hWnd) {
-	WindowHandler& wh = wh.getInstance();
+	WindowHandler* wh = WindowHandler::getInstance();
 
 	// HIDE Login Type
-	wh.setLoginTypeVisibility(false);
+	wh->setLoginTypeVisibility(false);
 
 	// SHOW Admin Login
-	if (!wh.isWindowCreated("adminLogin")) {
-		wh.createAdminLoginWindows(hWnd);
+	if (!wh->isWindowCreated("adminLogin")) {
+		wh->createAdminLoginWindows(hWnd);
 	}
-	wh.setAdminLoginVisibility(true);
+	wh->setAdminLoginVisibility(true);
 }
 
 /* Admin interface Wnd */
 void Admin::showInterface(HWND hWnd) {
-	WindowHandler& wh = wh.getInstance();
+	WindowHandler* wh = WindowHandler::getInstance();
 
 	// Hide other Admin windows
-	wh.setAdminLoginVisibility(false);
-	wh.setAdminCourseManagementVisibility(false);
-	wh.setAdminTeacherManagementVisibility(false);
-	wh.setAdminRoomManagementVisibility(false);
+	wh->setAdminLoginVisibility(false);
+	wh->setAdminCourseManagementVisibility(false);
+	wh->setAdminTeacherManagementVisibility(false);
+	wh->setAdminRoomManagementVisibility(false);
 
 	// Show Admin Inferface
-	if (!wh.isWindowCreated("adminInterface")) {
-		wh.createAdminInterfaceWindows(hWnd);
+	if (!wh->isWindowCreated("adminInterface")) {
+		wh->createAdminInterfaceWindows(hWnd);
 	}
-	wh.setAdminInterfaceVisibility(true);
+	wh->setAdminInterfaceVisibility(true);
 }
 
 void Admin::addData(HWND hWnd) {
@@ -84,154 +84,154 @@ void Admin::insertToDB(HWND hWnd) {
 
 /* Admin course management Wnd */
 void CourseManagement::showInterface(HWND hWnd) {
-	WindowHandler& wh = wh.getInstance();
+	WindowHandler* wh = WindowHandler::getInstance();
 
 	// Hide other Admin windows
-	wh.setAdminInterfaceVisibility(false);
-	wh.setAdminAddCourseVisibility(false);
+	wh->setAdminInterfaceVisibility(false);
+	wh->setAdminAddCourseVisibility(false);
 
 	// Show Admin Inferface
-	if (!wh.isWindowCreated("adminCourseManagement")) {
-		wh.createAdminCourseManagementWindows(hWnd);
+	if (!wh->isWindowCreated("adminCourseManagement")) {
+		wh->createAdminCourseManagementWindows(hWnd);
 	}
-	wh.setAdminCourseManagementVisibility(true);
+	wh->setAdminCourseManagementVisibility(true);
 }
 
 /* Admin add course Wnd */
 void CourseManagement::addData(HWND hWnd) {
-	WindowHandler& wh = wh.getInstance();
+	WindowHandler* wh = WindowHandler::getInstance();
 
 	// Hide Course Management
-	wh.setAdminCourseManagementVisibility(false);
+	wh->setAdminCourseManagementVisibility(false);
 
 	// Show Add Course
-	if (!wh.isWindowCreated("adminAddCourse")) {
-		wh.createAdminAddCourseWindows(hWnd);
+	if (!wh->isWindowCreated("adminAddCourse")) {
+		wh->createAdminAddCourseWindows(hWnd);
 	}
-	wh.setAdminAddCourseVisibility(true);
+	wh->setAdminAddCourseVisibility(true);
 }
 
 /* Admin insert course to DB */
 void CourseManagement::insertToDB(HWND hWnd) {
-	WindowHandler& wh = wh.getInstance();
+	WindowHandler* wh = WindowHandler::getInstance();
 
 	// Add course to DB
-	wh.insertCourseIntoDatabase(hWnd);
+	wh->insertCourseIntoDatabase(hWnd);
 }
 
 /* Admin teacher management Wnd */
 void TeacherManagement::showInterface(HWND hWnd) {
-	WindowHandler& wh = wh.getInstance();
+	WindowHandler* wh = WindowHandler::getInstance();
 
 	// Hide other Admin windows
-	wh.setAdminInterfaceVisibility(false);
-	wh.setAdminAddTeacherVisibility(false);
+	wh->setAdminInterfaceVisibility(false);
+	wh->setAdminAddTeacherVisibility(false);
 
 	// Show Admin Inferface
-	if (!wh.isWindowCreated("adminTeacherManagement")) {
-		wh.createAdminTeacherManagementWindows(hWnd);
+	if (!wh->isWindowCreated("adminTeacherManagement")) {
+		wh->createAdminTeacherManagementWindows(hWnd);
 	}
-	wh.setAdminTeacherManagementVisibility(true);
+	wh->setAdminTeacherManagementVisibility(true);
 }
 
 /* Admin add teacher Wnd */
 void TeacherManagement::addData(HWND hWnd) {
-	WindowHandler& wh = wh.getInstance();
+	WindowHandler* wh = WindowHandler::getInstance();
 
 	// Hide Teacher Management
-	wh.setAdminTeacherManagementVisibility(false);
+	wh->setAdminTeacherManagementVisibility(false);
 
 	// Show Add Teacher
-	if (!wh.isWindowCreated("adminAddTeacher")) {
-		wh.createAdminAddTeacherWindows(hWnd);
+	if (!wh->isWindowCreated("adminAddTeacher")) {
+		wh->createAdminAddTeacherWindows(hWnd);
 	}
-	wh.setAdminAddTeacherVisibility(true);
+	wh->setAdminAddTeacherVisibility(true);
 }
 
 /* Admin insert teacher into DB */
 void TeacherManagement::insertToDB(HWND hWnd) {
-	WindowHandler& wh = wh.getInstance();
+	WindowHandler* wh = WindowHandler::getInstance();
 
 	// Add teacher into DB
-	wh.insertTeacherIntoDatabase(hWnd);
+	wh->insertTeacherIntoDatabase(hWnd);
 }
 
 /* Admin room management Wnd */
 void RoomManagement::showInterface(HWND hWnd) {
-	WindowHandler& wh = wh.getInstance();
+	WindowHandler* wh = WindowHandler::getInstance();
 
 	// Hide other Admin windows
-	wh.setAdminInterfaceVisibility(false);
-	wh.setAdminManageRoomVisibility(false);
-	wh.setAdminAddRoomVisibility(false);
+	wh->setAdminInterfaceVisibility(false);
+	wh->setAdminManageRoomVisibility(false);
+	wh->setAdminAddRoomVisibility(false);
 
 	// Show Admin Inferface
-	if (!wh.isWindowCreated("adminRoomManagement")) {
-		wh.createAdminRoomManagementWindows(hWnd);
+	if (!wh->isWindowCreated("adminRoomManagement")) {
+		wh->createAdminRoomManagementWindows(hWnd);
 	}
-	wh.setAdminRoomManagementVisibility(true);
+	wh->setAdminRoomManagementVisibility(true);
 }
 
 /* Admin manage rooms Wnd */
 void RoomManagement::manageData(HWND hWnd) {
-	WindowHandler& wh = wh.getInstance();
+	WindowHandler* wh = WindowHandler::getInstance();
 
 	// Hide other Admin windows
-	wh.setAdminRoomManagementVisibility(false);
+	wh->setAdminRoomManagementVisibility(false);
 
 	// Show Admin Inferface
-	if (!wh.isWindowCreated("adminManageRoom")) {
-		wh.createAdminManageRoomWindows(hWnd);
+	if (!wh->isWindowCreated("adminManageRoom")) {
+		wh->createAdminManageRoomWindows(hWnd);
 	}
-	wh.setAdminManageRoomVisibility(true);
+	wh->setAdminManageRoomVisibility(true);
 }
 
 /* Admin add clasroom Wnd */
 void RoomManagement::addData(HWND hWnd) {
-	WindowHandler& wh = wh.getInstance();
+	WindowHandler* wh = WindowHandler::getInstance();
 
 	// Hide Teacher Management
-	wh.setAdminRoomManagementVisibility(false);
+	wh->setAdminRoomManagementVisibility(false);
 
 	// Show Add Teacher
-	if (!wh.isWindowCreated("adminAddRoom")) {
-		wh.createAdminAddRoomWindows(hWnd);
+	if (!wh->isWindowCreated("adminAddRoom")) {
+		wh->createAdminAddRoomWindows(hWnd);
 	}
-	wh.setAdminAddRoomVisibility(true);
+	wh->setAdminAddRoomVisibility(true);
 }
 
 /* Admin insert classroom into DB */
 void RoomManagement::insertToDB(HWND hWnd) {
-	WindowHandler& wh = wh.getInstance();
+	WindowHandler* wh = WindowHandler::getInstance();
 
 	// Add room into DB
-	wh.insertRoomIntoDatabase(hWnd);
+	wh->insertRoomIntoDatabase(hWnd);
 
 }
 /* Teacher interface Wnd */
 void Teacher::showInterface(HWND hWnd) {
-	WindowHandler& wh = wh.getInstance();
+	WindowHandler* wh = WindowHandler::getInstance();
 
 	// HIDE Login Type
-	wh.setLoginTypeVisibility(false);
+	wh->setLoginTypeVisibility(false);
 
 	// SHOW Teacher Login
-	if (!wh.isWindowCreated("teacherLogin")) {
-		wh.createTeacherLoginWindows(hWnd);
+	if (!wh->isWindowCreated("teacherLogin")) {
+		wh->createTeacherLoginWindows(hWnd);
 	}
-	wh.setTeacherLoginVisibility(true);
+	wh->setTeacherLoginVisibility(true);
 }
 
 /* Student interface Wnd */
 void Student::showInterface(HWND hWnd) {
-	WindowHandler& wh = wh.getInstance();
+	WindowHandler* wh = WindowHandler::getInstance();
 
 	// HIDE Login Type
-	wh.setLoginTypeVisibility(false);
+	wh->setLoginTypeVisibility(false);
 
 	// SHOW Student Login
-	if (!wh.isWindowCreated("studentLogin")) {
-		wh.createStudentLoginWindows(hWnd);
+	if (!wh->isWindowCreated("studentLogin")) {
+		wh->createStudentLoginWindows(hWnd);
 	}
-	wh.setStudentLoginVisibility(true);
+	wh->setStudentLoginVisibility(true);
 }

@@ -6,21 +6,21 @@
 #include <string>
 #include <stdexcept>
 #include <vector>
-#include <memory>  // For std::unique_ptr
+#include <memory>
 
 class SQLiteHandler {
 private:
     static std::unique_ptr<SQLiteHandler> instance;
     sqlite3* db;
     std::string databaseName;
-
+public:
     SQLiteHandler(const std::string& databaseName);
 
     SQLiteHandler(const SQLiteHandler&) = delete;
     SQLiteHandler& operator=(const SQLiteHandler&) = delete;
 
-public:
     ~SQLiteHandler();
+
     static SQLiteHandler* getInstance(const std::string& databaseName);
 
     bool insertTeacher(const std::string& fullname, const std::string& course,

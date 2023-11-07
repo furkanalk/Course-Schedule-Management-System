@@ -8,6 +8,8 @@
 #include <algorithm>
 #include <iterator>
 
+std::unique_ptr<WindowHandler> WindowHandler::instance = nullptr;
+
 // Constructor to set the default values of window status' to FALSE and windows' to NULL
 WindowHandler::WindowHandler() {
     windowCreationStatus["loginType"] = false;
@@ -35,6 +37,12 @@ bool WindowHandler::isWindowCreated(const std::string& windowName) {
         return windowCreationStatus[windowName];
     else
         return false;
+}
+
+WindowHandler* WindowHandler::getInstance() {
+    if (instance == nullptr)
+        instance = std::make_unique<WindowHandler>();
+    return instance.get();
 }
 
 // Convert to wide string
@@ -217,14 +225,14 @@ void WindowHandler::createAdminAddCourseWindows(HWND hWnd) {
         return;
     }
 
-    adminAddCourse.classList = CreateWindowEx(0, WC_LISTBOX, NULL, WS_CHILD | WS_VISIBLE | WS_VSCROLL | LBS_NOTIFY | LBS_MULTIPLESEL, 200, 300, 400, 100, hWnd, (HMENU)180, GetModuleHandle(NULL), NULL);
+    adminAddCourse.classList = CreateWindowEx(0, WC_LISTBOX, NULL, WS_CHILD | WS_VISIBLE | WS_VSCROLL | LBS_NOTIFY | LBS_MULTIPLESEL, 200, 300, 400, 100, hWnd, (HMENU)150, GetModuleHandle(NULL), NULL);
 
     const auto& ids = allClassrooms.getIds();
     const auto& names = allClassrooms.getNames();
     const auto& floors = allClassrooms.getFloors();
     const auto& categories = allClassrooms.getCategories();
 
-    for (size_t i = 0; i < names.size(); ++i) {
+    for (int i = 0; i < names.size(); ++i) {
         std::wstring itemText = convertToWideString(names[i]) + L" - " +
             convertToWideString(floors[i]) + L" - " +
             convertToWideString(categories[i]);
@@ -234,10 +242,7 @@ void WindowHandler::createAdminAddCourseWindows(HWND hWnd) {
 
         int roomId = ids[i];
         if (roomId <= 0) {
-            MessageBox(hWnd,
-                _T("Error retrieving id for list box item."),
-                _T("Erro: ID is invalid"),
-                MB_ICONERROR | MB_OK); 
+            MessageBox(hWnd, _T("Error retrieving id for list box item."), _T("Erro: ID is invalid"),MB_ICONERROR | MB_OK); 
             continue;
         }
         else {
@@ -294,10 +299,7 @@ void WindowHandler::insertCourseIntoDatabase(HWND hWnd) {
     for (int index : selectedIndices) {
         LRESULT itemData = SendMessage(adminAddCourse.classList, LB_GETITEMDATA, (WPARAM)index, 0);
         if (itemData == LB_ERR) {
-            MessageBox(hWnd,
-                _T("Error retrieving data for list box item."),
-                _T("Error"),
-                MB_ICONERROR | MB_OK);
+            MessageBox(hWnd,_T("Error retrieving data for list box item."),_T("Error"),MB_ICONERROR | MB_OK);
             continue;
         }
         int roomId = static_cast<int>(itemData);
@@ -445,9 +447,10 @@ void WindowHandler::insertTeacherIntoDatabase(HWND hWnd) {
     std::string course_utf8(course.begin(), course.end());
 
     std::vector<int> workdayValues;
-    std::transform(workdays.begin(), workdays.end(), std::back_inserter(workdayValues), [](HWND checkboxHwnd) {
-        return SendMessage(checkboxHwnd, BM_GETCHECK, 0, 0) == BST_CHECKED ? 1 : 0;
-        });
+    for (HWND checkboxHwnd : workdays) {
+        int value = SendMessage(checkboxHwnd, BM_GETCHECK, 0, 0) == BST_CHECKED ? 1 : 0;
+        workdayValues.push_back(value);
+    }
 
     try {
         auto sqliteHandler = SQLiteHandler::getInstance("courseScheduleDB.sqlite");
@@ -507,14 +510,14 @@ void WindowHandler::createAdminManageRoomWindows(HWND hWnd) {
 
     // Window Controls
     adminManageRoom.header = CreateWindow(TEXT("static"), TEXT("- Administrator Panel -"), WS_CHILD | ES_CENTER, 100, 80, 600, 450, hWnd, NULL, NULL, NULL);
-    adminManageRoom.classList = CreateWindowEx(0, WC_LISTBOX, NULL, WS_CHILD | WS_VISIBLE | WS_VSCROLL | LBS_NOTIFY | LBS_MULTIPLESEL, 200, 150, 400, 80, hWnd, (HMENU)180, GetModuleHandle(NULL), NULL);
-    adminManageRoom.fetch = CreateWindow(TEXT("button"), TEXT("Fetch"), WS_CHILD | ES_CENTER, 300, 250, 80, 30, hWnd, NULL, NULL, NULL);
-    adminManageRoom.deleteClass = CreateWindow(TEXT("button"), TEXT("Delete"), WS_CHILD | ES_CENTER, 400, 250, 80, 30, hWnd, (HMENU)180, NULL, NULL);
-    adminManageRoom.className = CreateWindow(TEXT("EDIT"), TEXT(""), WS_CHILD | ES_CENTER, 240, 320, 300, 30, hWnd, NULL, NULL, NULL);
-    adminManageRoom.classFloor = CreateWindow(TEXT("EDIT"), TEXT(""), WS_CHILD | ES_CENTER, 240, 360, 300, 30, hWnd, NULL, NULL, NULL);
-    adminManageRoom.classCategory = CreateWindow(TEXT("EDIT"), TEXT(""), WS_CHILD | ES_CENTER, 240, 400, 300, 30, hWnd, NULL, NULL, NULL);
-    adminManageRoom.update = CreateWindow(TEXT("button"), TEXT("Update"), WS_BORDER | WS_CHILD, 400, 480, 80, 30, hWnd, (HMENU)181, NULL, NULL);
-    adminManageRoom.previous = CreateWindow(TEXT("button"), TEXT("Back"), WS_BORDER | WS_CHILD, 300, 480, 80, 30, hWnd, (HMENU)182, NULL, NULL);
+    adminManageRoom.classList = CreateWindowEx(0, WC_COMBOBOX, NULL, CBS_DROPDOWNLIST | WS_CHILD | WS_VSCROLL, 200, 150, 400, 80, hWnd, (HMENU)180, NULL, NULL);
+    adminManageRoom.fetch = CreateWindow(TEXT("button"), TEXT("Fetch"), WS_CHILD | ES_CENTER, 300, 250, 80, 30, hWnd, (HMENU)181, NULL, NULL);
+    adminManageRoom.deleteClass = CreateWindow(TEXT("button"), TEXT("Delete"), WS_CHILD | ES_CENTER, 400, 250, 80, 30, hWnd, (HMENU)182, NULL, NULL);
+    adminManageRoom.className = CreateWindow(TEXT("EDIT"), TEXT(""), WS_CHILD | ES_CENTER, 240, 320, 300, 30, hWnd, (HMENU)185, NULL, NULL);
+    adminManageRoom.classFloor = CreateWindow(TEXT("EDIT"), TEXT(""), WS_CHILD | ES_CENTER, 240, 360, 300, 30, hWnd, (HMENU)186, NULL, NULL);
+    adminManageRoom.classCategory = CreateWindow(TEXT("EDIT"), TEXT(""), WS_CHILD | ES_CENTER, 240, 400, 300, 30, hWnd, (HMENU)187, NULL, NULL);
+    adminManageRoom.update = CreateWindow(TEXT("button"), TEXT("Update"), WS_BORDER | WS_CHILD, 400, 480, 80, 30, hWnd, (HMENU)183, NULL, NULL);
+    adminManageRoom.previous = CreateWindow(TEXT("button"), TEXT("Back"), WS_BORDER | WS_CHILD, 300, 480, 80, 30, hWnd, (HMENU)184, NULL, NULL);
 
     auto sqliteHandler = SQLiteHandler::getInstance("courseScheduleDB.sqlite");
 
@@ -531,7 +534,7 @@ void WindowHandler::createAdminManageRoomWindows(HWND hWnd) {
 
     for (const auto& name : names) {
         std::wstring wideName = convertToWideString(name);
-        SendMessage(adminManageRoom.classList, LB_ADDSTRING, 0, (LPARAM)wideName.c_str());
+        SendMessage(adminManageRoom.classList, CB_ADDSTRING, 0, (LPARAM)wideName.c_str());
     }
 
     // Apply fonts to controls
@@ -550,11 +553,11 @@ void WindowHandler::setAdminManageRoomVisibility(bool visible) {
     int cmdShow = visible ? SW_SHOW : SW_HIDE;
     ShowWindow(adminManageRoom.header, cmdShow);
     ShowWindow(adminManageRoom.classList, cmdShow);
+    ShowWindow(adminManageRoom.deleteClass, cmdShow);
+    ShowWindow(adminManageRoom.fetch, cmdShow);
     ShowWindow(adminManageRoom.classFloor, cmdShow);
     ShowWindow(adminManageRoom.classCategory, cmdShow);
     ShowWindow(adminManageRoom.className, cmdShow);
-    ShowWindow(adminManageRoom.deleteClass, cmdShow);
-    ShowWindow(adminManageRoom.fetch, cmdShow);
     ShowWindow(adminManageRoom.previous, cmdShow);
     ShowWindow(adminManageRoom.update, cmdShow);
 }

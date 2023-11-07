@@ -16,8 +16,12 @@ SQLiteHandler::~SQLiteHandler() {
 }
 
 SQLiteHandler* SQLiteHandler::getInstance(const std::string& databaseName) {
-    if (instance == nullptr)
-        instance = std::unique_ptr<SQLiteHandler>(new SQLiteHandler(databaseName));
+    if (instance == nullptr) {
+        if (databaseName.empty()) {
+            throw std::runtime_error("Database name is empty.");
+        }
+        instance = std::make_unique<SQLiteHandler>(databaseName);
+    }
     return instance.get();
 }
 

@@ -1,6 +1,7 @@
 // https://qiwi.gg/file/akpz8771-Debug
 #include "framework.h"
 #include "course.h"
+#include "SQLiteHandler.h"
 #include "resource.h"
 #include "windows.h"
 #include <memory>
@@ -188,7 +189,7 @@ void HandleAdminLogin(int wmId, HWND hWnd, Admin& actualAdmin,
 
         /* Classroom Management */
     case 161:
-        // go to Add Course from Course Management (back)
+        // go to Manage Room from Course Management (back)
         roomMngt->manageData(hWnd);
         break;
     case 162:
@@ -204,13 +205,19 @@ void HandleAdminLogin(int wmId, HWND hWnd, Admin& actualAdmin,
         user.showInterface(hWnd);
         break;
 
+        /* Classroom Manage Classes */
+    case 184:
+        // back to Classroom Management from Manage Classes
+        roomMngt->showInterface(hWnd);
+        break;
+
         /* Add Classroom */
     case 171:
         // back to Classroom Management from Room Management (back)
         roomMngt->showInterface(hWnd);
         break;
     case 172:
-        // back to Classroom Management from Room Management (back)
+        // insert a new classroom to Database (insert)
         roomData->insertToDB(hWnd);
         break;
     //case 172:
@@ -268,8 +275,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     static HBRUSH hbrBkgnd = CreateSolidBrush(RGB(200, 200, 255));
-
-    // Parent
+  
     static User user;
     // User's children
     static std::unique_ptr<User> userAdmin = std::make_unique<Admin>();
@@ -294,14 +300,50 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_COMMAND:
     {
         int wmId = LOWORD(wParam);
+        HWND hComboBox = GetDlgItem(hWnd, 180);
 
-        if (wmId == 180 && HIWORD(wParam) == LBN_SELCHANGE) {
-            HWND hListBox = GetDlgItem(hWnd, 180);
+        if (wmId == 150 && HIWORD(wParam) == LBN_SELCHANGE) {
+            HWND hListBox = GetDlgItem(hWnd, 150);
 
             int selectedCount = SendMessage(hListBox, LB_GETSELCOUNT, 0, 0);
 
             if (selectedCount > 2)
                 MessageBox(hWnd, L"Only two selections are allowed.", L"Selection Limit", MB_ICONWARNING | MB_OK);
+        }
+
+        if (wmId == 181) {
+            try {
+                HWND hComboBox = GetDlgItem(hWnd, 180);
+
+                SQLiteHandler* dbHandler = SQLiteHandler::getInstance("courseScheduleDB.sqlite");
+                RoomManagement allClassrooms = dbHandler->getClassrooms();
+
+                int idx = (int)SendMessage(hComboBox, CB_GETCURSEL, 0, 0);
+
+                const auto& names = allClassrooms.getNames();
+                const auto& floors = allClassrooms.getFloors();
+                const auto& categories = allClassrooms.getCategories();
+
+                WindowHandler* wh = WindowHandler::getInstance();
+                const std::wstring name = wh->convertToWideString(names[idx]);
+                const std::wstring floor = wh->convertToWideString(floors[idx]);
+                const std::wstring category = wh->convertToWideString(categories[idx]);
+
+                HWND hNameInput = GetDlgItem(hWnd, 185);
+                HWND hFloorInput = GetDlgItem(hWnd, 186);
+                HWND hCategoryInput = GetDlgItem(hWnd, 187);
+
+                SetWindowText(hNameInput, name.c_str());
+                SetWindowText(hFloorInput, floor.c_str());
+                SetWindowText(hCategoryInput, category.c_str());
+
+                //SendMessage(hComboBox, CB_SETCURSEL, (WPARAM)-1, 0);
+            }
+            catch (const std::runtime_error& e) {
+                std::wstring errorMessage = L"Error: " + std::wstring(e.what(), e.what() + strlen(e.what()));
+                MessageBox(hWnd, errorMessage.c_str(), L"Database Error", MB_OK | MB_ICONERROR);
+            }
+            break;
         }
 
         if (wmId == IDM_EXIT)
@@ -316,17 +358,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             HandleAdminLogin(wmId, hWnd, *actualAdmin, *userAdmin, *userTeacher, *userStudent, user);
 
         // Teacher Windows
-        else if (wmId >= 200 && wmId < 300)
+        if (wmId >= 200 && wmId < 300)
             HandleTeacherLogin(wmId, hWnd, user);
 
         // Grade Windows
-        else if (wmId >= 300 && wmId < 400)
+        if (wmId >= 300 && wmId < 400)
             HandleStudentLogin(wmId, hWnd, user);
 
-        else 
-            return DefWindowProc(hWnd, message, wParam, lParam);
-       
-        break;
+        return DefWindowProc(hWnd, message, wParam, lParam);    
     }
 
     case WM_DESTROY:
