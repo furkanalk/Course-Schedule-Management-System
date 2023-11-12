@@ -65,6 +65,25 @@ class WindowHandler {
         AdminCourseManagement() : header(nullptr), syllabus(nullptr), showCourses(nullptr), addCourse(nullptr), previous(nullptr), proceed(nullptr) {}
     } adminCourseManagement;
 
+    struct AdminManageCourse {
+        // Window Handlers
+        HWND header;
+        HWND courseList;
+        HWND fetch;
+        HWND deleteCourse;
+        HWND courseName;
+        HWND courseRoomFirst;
+        HWND courseRoomSecond;
+        HWND courseRoomF;
+        HWND courseRoomS;
+        HWND previous;
+        HWND update;
+
+        // Set all windows to NULL by default
+        AdminManageCourse() : header(nullptr), courseList(nullptr), fetch(nullptr), deleteCourse(nullptr), courseName(nullptr), courseRoomFirst(nullptr), courseRoomSecond(nullptr), 
+            courseRoomF(nullptr), courseRoomS(nullptr), previous(nullptr), update(nullptr) {}
+    } adminManageCourse;
+
     struct AdminAddCourse {
         // Window Handlers
         HWND header;
@@ -90,6 +109,34 @@ class WindowHandler {
         // Set all windows to NULL by default
         AdminTeacherManagement() : header(nullptr), showTeachers(nullptr), addTeacher(nullptr), previous(nullptr), proceed(nullptr) {}
     } adminTeacherManagement;
+
+    struct AdminManageTeacher {
+        // Window Handlers
+        HWND header;
+        HWND teacherList;
+        HWND fetch;
+        HWND deleteTeacher;
+        HWND teacherName;
+        HWND mondayStatic;
+        HWND mondayBool;
+        HWND tuesdayStatic;
+        HWND tuesdayBool;
+        HWND wednesdayStatic;
+        HWND wednesdayBool;
+        HWND thursdayStatic;
+        HWND thursdayBool;
+        HWND fridayStatic;
+        HWND fridayBool;
+        HWND saturdayStatic;
+        HWND saturdayBool;
+        HWND previous;
+        HWND update;
+
+        // Set all windows to NULL by default
+        AdminManageTeacher() : header(nullptr), teacherList(nullptr), fetch(nullptr), deleteTeacher(nullptr), teacherName(nullptr), mondayStatic(nullptr), mondayBool(nullptr), 
+            tuesdayStatic(nullptr), tuesdayBool(nullptr), wednesdayStatic(nullptr), wednesdayBool(nullptr), thursdayStatic(nullptr), thursdayBool(nullptr), fridayStatic(nullptr), fridayBool(nullptr),
+            saturdayStatic(nullptr), saturdayBool(nullptr), previous(nullptr), update(nullptr) {}
+    } adminManageTeacher;
 
     struct AdminAddTeacher {
         // Window Handlers
@@ -194,22 +241,14 @@ public:
     WindowHandler(const WindowHandler&) = delete;
     WindowHandler& operator=(const WindowHandler&) = delete;
 
-    // Create an instance of the object
     static WindowHandler* getInstance();
-
-    /* Convert to Wide String */
     std::wstring convertToWideString(const std::string& str);
 
-    // Set the status of a window when it is created.
     void setWindowCreated(const std::string& windowName, bool isCreated);
-
-    // Check if a window is created.
     bool isWindowCreated(const std::string& windowName);
 
-    // Show error
+    std::wstring getComboBoxSelectedText(HWND comboBox);
     void displayError(const std::wstring& message, HWND hWnd);
-    
-    // Get input
     std::wstring getWindowText(HWND hWnd);
 
     // Login Type
@@ -228,6 +267,10 @@ public:
     void createAdminCourseManagementWindows(HWND hWnd);
     void setAdminCourseManagementVisibility(bool isVisible);
 
+    // Admin Manage Course
+    void createAdminManageCourseWindows(HWND hWnd);
+    void setAdminManageCourseVisibility(bool isVisible);
+
     // Admin Add Course
     void createAdminAddCourseWindows(HWND hWnd);
     void setAdminAddCourseVisibility(bool isVisible);
@@ -236,6 +279,10 @@ public:
     // Admin Teacher Management
     void createAdminTeacherManagementWindows(HWND hWnd);
     void setAdminTeacherManagementVisibility(bool isVisible);
+
+    // Admin Manage Teacher
+    void createAdminManageTeacherWindows(HWND hWnd);
+    void setAdminManageTeacherVisibility(bool isVisible);
 
     // Admin Add Teacher
     void createAdminAddTeacherWindows(HWND hWnd);

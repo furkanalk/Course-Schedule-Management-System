@@ -16,8 +16,10 @@ WindowHandler::WindowHandler() {
     windowCreationStatus["adminLogin"] = false;
     windowCreationStatus["adminInterface"] = false;
     windowCreationStatus["adminCourseManagement"] = false;
+    windowCreationStatus["adminManageCourse"] = false;
     windowCreationStatus["adminAddCourse"] = false;
     windowCreationStatus["adminTeacherManagement"] = false;
+    windowCreationStatus["adminManageTeacher"] = false;
     windowCreationStatus["adminAddTeacher"] = false;
     windowCreationStatus["adminRoomManagement"] = false;
     windowCreationStatus["adminManageRoom"] = false;
@@ -61,6 +63,18 @@ std::wstring WindowHandler::convertToWideString(const std::string& str) {
     return std::wstring(buffer.begin(), buffer.end() - 1);
 }
 
+std::wstring WindowHandler::getComboBoxSelectedText(HWND comboBox) {
+    int selectedIndex = SendMessage(comboBox, CB_GETCURSEL, 0, 0);
+    if (selectedIndex < 0) return L"";
+
+    int len = SendMessage(comboBox, CB_GETLBTEXTLEN, selectedIndex, 0);
+    if (len < 0) return L"";
+
+    std::vector<wchar_t> buffer(len + 1);
+    SendMessage(comboBox, CB_GETLBTEXT, selectedIndex, (LPARAM)buffer.data());
+    return std::wstring(buffer.begin(), buffer.end());
+}
+
 // Error Display
 void WindowHandler::displayError(const std::wstring& message, HWND hWnd) {
     MessageBox(hWnd, message.c_str(), TEXT("Error"), MB_OK | MB_ICONERROR);
@@ -82,9 +96,9 @@ void WindowHandler::createLoginTypeWindows(HWND hWnd) {
 
     // Window Controls
     loginType.welcome = CreateWindow(TEXT("static"), TEXT("Welcome to our\nCourse Schedule\nManagement System!"), SS_CENTER | WS_CHILD , 100, 20, 600, 100, hWnd, NULL, NULL, NULL);
-    loginType.admin = CreateWindow(TEXT("button"), TEXT("Admin"), WS_CHILD, 260, 160, 300, 100, hWnd, (HMENU)401, NULL, NULL);
-    loginType.teacher = CreateWindow(TEXT("button"), TEXT("Teacher"), WS_CHILD, 260, 270, 300, 100, hWnd, (HMENU)402, NULL, NULL);
-    loginType.student = CreateWindow(TEXT("button"), TEXT("Grade"), WS_CHILD, 260, 390, 300, 100, hWnd, (HMENU)403, NULL, NULL);
+    loginType.admin = CreateWindow(TEXT("button"), TEXT("Admin"), WS_CHILD, 260, 160, 300, 100, hWnd, (HMENU)501, NULL, NULL);
+    loginType.teacher = CreateWindow(TEXT("button"), TEXT("Teacher"), WS_CHILD, 260, 270, 300, 100, hWnd, (HMENU)502, NULL, NULL);
+    loginType.student = CreateWindow(TEXT("button"), TEXT("Grade"), WS_CHILD, 260, 390, 300, 100, hWnd, (HMENU)503, NULL, NULL);
 
     // Apply fonts to controls
     SendMessage(loginType.welcome, WM_SETFONT, (WPARAM)hFontH1, TRUE);
@@ -205,6 +219,96 @@ void WindowHandler::setAdminCourseManagementVisibility(bool visible) {
     ShowWindow(adminCourseManagement.proceed, cmdShow);
 }
 
+/* Manage Courses */
+void WindowHandler::createAdminManageCourseWindows(HWND hWnd) {
+    // Font style
+    HFONT hFontH1 = CreateFont(32, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
+    HFONT hFontH2 = CreateFont(24, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
+    HFONT hFontH3 = CreateFont(18, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
+
+    // Window Controls
+    adminManageCourse.header = CreateWindow(TEXT("static"), TEXT("- Administrator Panel -"), WS_CHILD | ES_CENTER, 100, 80, 600, 450, hWnd, NULL, NULL, NULL);
+    adminManageCourse.courseList = CreateWindowEx(0, WC_COMBOBOX, NULL, CBS_DROPDOWNLIST | WS_CHILD | WS_VSCROLL, 200, 150, 400, 80, hWnd, (HMENU)210, NULL, NULL);
+    adminManageCourse.fetch = CreateWindow(TEXT("button"), TEXT("Fetch"), WS_CHILD | ES_CENTER, 300, 250, 80, 30, hWnd, (HMENU)211, NULL, NULL);
+    adminManageCourse.deleteCourse = CreateWindow(TEXT("button"), TEXT("Delete"), WS_CHILD | ES_CENTER, 400, 250, 80, 30, hWnd, (HMENU)212, NULL, NULL);
+    adminManageCourse.courseName = CreateWindow(TEXT("EDIT"), TEXT(""), WS_CHILD | ES_CENTER, 240, 310, 300, 30, hWnd, (HMENU)213, NULL, NULL);
+    adminManageCourse.courseRoomF = CreateWindow(TEXT("EDIT"), TEXT(""), WS_CHILD | ES_CENTER, 80, 360, 300, 30, hWnd, (HMENU)218, NULL, NULL);
+    adminManageCourse.courseRoomFirst = CreateWindowEx(0, WC_COMBOBOX, NULL, CBS_DROPDOWNLIST | WS_CHILD | WS_VSCROLL, 400, 360, 300, 80, hWnd, (HMENU)214, NULL, NULL);
+    adminManageCourse.courseRoomS = CreateWindow(TEXT("EDIT"), TEXT(""), WS_CHILD | ES_CENTER, 80, 400, 300, 30, hWnd, (HMENU)219, NULL, NULL);
+    adminManageCourse.courseRoomSecond = CreateWindowEx(0, WC_COMBOBOX, NULL, CBS_DROPDOWNLIST | WS_CHILD | WS_VSCROLL, 400, 400, 300, 80, hWnd, (HMENU)217, NULL, NULL);
+    adminManageCourse.update = CreateWindow(TEXT("button"), TEXT("Update"), WS_BORDER | WS_CHILD, 400, 480, 80, 30, hWnd, (HMENU)215, NULL, NULL);
+    adminManageCourse.previous = CreateWindow(TEXT("button"), TEXT("Back"), WS_BORDER | WS_CHILD, 300, 480, 80, 30, hWnd, (HMENU)216, NULL, NULL);
+
+    auto sqliteHandler = SQLiteHandler::getInstance("courseScheduleDB.sqlite");
+    CourseManagement allCourses;
+    try {
+        allCourses = sqliteHandler->getCourses();
+    }
+    catch (const std::runtime_error& e) {
+        std::wstring errorMessage = L"Error: " + std::wstring(e.what(), e.what() + strlen(e.what()));
+        MessageBox(hWnd, errorMessage.c_str(), TEXT("Database Error"), MB_OK | MB_ICONERROR);
+    }
+
+    auto ids = allCourses.getIds();
+    auto names = allCourses.getNames();
+
+    // Ensure that the ComboBox is empty before adding new items
+    SendMessage(adminManageCourse.courseList, CB_RESETCONTENT, 0, 0);
+
+    for (size_t i = 0; i < names.size(); ++i) {
+        std::wstring wideName = convertToWideString(names[i]);
+        LRESULT index = SendMessage(adminManageCourse.courseList, CB_ADDSTRING, 0, (LPARAM)wideName.c_str());
+        SendMessage(adminManageCourse.courseList, CB_SETITEMDATA, index, (LPARAM)ids[i]);
+    }
+
+    RoomManagement allClassrooms;
+    try {
+        allClassrooms = sqliteHandler->getClassrooms();
+    }
+    catch (const std::runtime_error& e) {
+        std::wstring errorMessage = L"Error retrieving classrooms: " + std::wstring(e.what(), e.what() + strlen(e.what()));
+        MessageBox(hWnd, errorMessage.c_str(), TEXT("Database Error"), MB_OK | MB_ICONERROR);
+        return;
+    }
+
+    auto classroomNames = allClassrooms.getNames();
+    SendMessage(adminManageCourse.courseRoomFirst, CB_RESETCONTENT, 0, 0);
+    SendMessage(adminManageCourse.courseRoomSecond, CB_RESETCONTENT, 0, 0);
+    for (const auto& name : classroomNames) {
+        std::wstring wideName = convertToWideString(name);
+        SendMessage(adminManageCourse.courseRoomFirst, CB_ADDSTRING, 0, (LPARAM)wideName.c_str());
+        SendMessage(adminManageCourse.courseRoomSecond, CB_ADDSTRING, 0, (LPARAM)wideName.c_str());
+    }
+
+    SendMessage(adminManageCourse.courseRoomFirst, CB_SETCURSEL, -1, 0);
+    SendMessage(adminManageCourse.courseRoomSecond, CB_SETCURSEL, -1, 0);
+
+    // Apply fonts to controls
+    SendMessage(adminManageCourse.header, WM_SETFONT, (WPARAM)hFontH1, TRUE);
+    //SendMessage(adminManageRoom.classList, WM_SETFONT, (WPARAM)hFontH3, TRUE);
+    /*SendMessage(adminManageCourse.fetch, WM_SETFONT, (WPARAM)hFontH2, TRUE);
+    SendMessage(adminManageCourse.courseName, WM_SETFONT, (WPARAM)hFontH2, TRUE);
+    SendMessage(adminManageCourse.courseFloor, WM_SETFONT, (WPARAM)hFontH2, TRUE);
+    SendMessage(adminManageCourse.deleteClass, WM_SETFONT, (WPARAM)hFontH2, TRUE);
+    SendMessage(adminManageCourse.previous, WM_SETFONT, (WPARAM)hFontH3, TRUE);
+    SendMessage(adminManageCourse.update, WM_SETFONT, (WPARAM)hFontH3, TRUE);*/
+}
+
+void WindowHandler::setAdminManageCourseVisibility(bool visible) {
+    int cmdShow = visible ? SW_SHOW : SW_HIDE;
+    ShowWindow(adminManageCourse.header, cmdShow);
+    ShowWindow(adminManageCourse.courseList, cmdShow);
+    ShowWindow(adminManageCourse.deleteCourse, cmdShow);
+    ShowWindow(adminManageCourse.fetch, cmdShow);
+    ShowWindow(adminManageCourse.courseName, cmdShow);
+    ShowWindow(adminManageCourse.courseRoomF, cmdShow);
+    ShowWindow(adminManageCourse.courseRoomS, cmdShow);
+    ShowWindow(adminManageCourse.courseRoomFirst, cmdShow);
+    ShowWindow(adminManageCourse.courseRoomSecond, cmdShow);
+    ShowWindow(adminManageCourse.previous, cmdShow);
+    ShowWindow(adminManageCourse.update, cmdShow);
+}
+
 /* Add Course */
 void WindowHandler::createAdminAddCourseWindows(HWND hWnd) {
     // Window Controls
@@ -237,7 +341,6 @@ void WindowHandler::createAdminAddCourseWindows(HWND hWnd) {
             convertToWideString(floors[i]) + L" - " +
             convertToWideString(categories[i]);
 
-        // Add the item to the ListBox
         LRESULT index = SendMessage(adminAddCourse.classList, LB_ADDSTRING, 0, (LPARAM)itemText.c_str());
 
         int roomId = ids[i];
@@ -280,54 +383,51 @@ void WindowHandler::insertCourseIntoDatabase(HWND hWnd) {
         return;
     }
 
-    std::vector<int> selectedIndices;
+    std::vector<std::wstring> selectedRoomNames;
     for (int i = 0; i < itemCount; ++i) {
-        if (SendMessage(adminAddCourse.classList, LB_GETSEL, i, 0) > 0)
-            selectedIndices.push_back(i);
+        if (SendMessage(adminAddCourse.classList, LB_GETSEL, i, 0) > 0) {
+            int len = SendMessage(adminAddCourse.classList, LB_GETTEXTLEN, i, 0);
+            std::wstring itemText(len + 1, L'\0');
+            SendMessage(adminAddCourse.classList, LB_GETTEXT, i, (LPARAM)itemText.data());
+            itemText.resize(len);
+            size_t pos = itemText.find(L" - ");
+            selectedRoomNames.push_back(pos != std::wstring::npos ? itemText.substr(0, pos) : L"");
+        }
     }
 
-    if (selectedIndices.empty()) {
+    if (selectedRoomNames.empty()) {
         displayError(TEXT("Please select at least one class."), hWnd);
         return;
     }
-    if (selectedIndices.size() > 2) {
+    if (selectedRoomNames.size() > 2) {
         displayError(TEXT("Please select no more than two classes."), hWnd);
         return;
     }
-
-    std::vector<int> selectedRoomIds;
-    for (int index : selectedIndices) {
-        LRESULT itemData = SendMessage(adminAddCourse.classList, LB_GETITEMDATA, (WPARAM)index, 0);
-        if (itemData == LB_ERR) {
-            MessageBox(hWnd,_T("Error retrieving data for list box item."),_T("Error"),MB_ICONERROR | MB_OK);
-            continue;
-        }
-        int roomId = static_cast<int>(itemData);
-        selectedRoomIds.push_back(roomId);
-    }
-
-    if (selectedRoomIds.size() == 1)
-        selectedRoomIds.push_back(selectedRoomIds[0]);
 
     std::string courseName_utf8(courseName.begin(), courseName.end());
 
     try {
         auto sqliteHandler = SQLiteHandler::getInstance("courseScheduleDB.sqlite");
 
-        std::vector<std::string> roomIdsForInsertion;
-        for (int id : selectedRoomIds) 
-            roomIdsForInsertion.push_back(std::to_string(id));
+        std::vector<std::string> roomNamesForInsertion;
+        for (const auto& name : selectedRoomNames) {
+            std::string utf8Name(name.begin(), name.end());
+            roomNamesForInsertion.push_back(utf8Name);
+        }
 
-        if (sqliteHandler->insertCourse(courseName_utf8, roomIdsForInsertion)) 
+        if (sqliteHandler->insertCourse(courseName_utf8, roomNamesForInsertion)) {
             MessageBox(hWnd, TEXT("Course inserted successfully!"), TEXT("Success"), MB_OK | MB_ICONINFORMATION);
-        else 
+        }
+        else {
             displayError(TEXT("Failed to insert course."), hWnd);
+        }
     }
     catch (const std::runtime_error& e) {
         std::wstring errorMessage = L"Error: " + std::wstring(e.what(), e.what() + strlen(e.what()));
         displayError(errorMessage.c_str(), hWnd);
     }
 }
+
 
 /* Teacher Management */
 void WindowHandler::createAdminTeacherManagementWindows(HWND hWnd) {
@@ -358,6 +458,107 @@ void WindowHandler::setAdminTeacherManagementVisibility(bool visible) {
     ShowWindow(adminTeacherManagement.addTeacher, cmdShow);
     ShowWindow(adminTeacherManagement.previous, cmdShow);
     ShowWindow(adminTeacherManagement.proceed, cmdShow);
+}
+
+/* Manage Teachers */
+void WindowHandler::createAdminManageTeacherWindows(HWND hWnd) {
+    // Font style
+    HFONT hFontH1 = CreateFont(32, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
+    HFONT hFontH2 = CreateFont(24, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
+    HFONT hFontH3 = CreateFont(18, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
+
+    // Window Controls
+    adminManageTeacher.header = CreateWindow(TEXT("static"), TEXT("- Administrator Panel -"), WS_CHILD | ES_CENTER, 100, 80, 600, 450, hWnd, NULL, NULL, NULL);
+    adminManageTeacher.teacherList = CreateWindowEx(0, WC_COMBOBOX, NULL, CBS_DROPDOWNLIST | WS_CHILD | WS_VSCROLL, 200, 150, 400, 80, hWnd, (HMENU)190, NULL, NULL);
+    adminManageTeacher.fetch = CreateWindow(TEXT("button"), TEXT("Fetch"), WS_CHILD | ES_CENTER, 300, 250, 80, 30, hWnd, (HMENU)191, NULL, NULL);
+    adminManageTeacher.deleteTeacher = CreateWindow(TEXT("button"), TEXT("Delete"), WS_CHILD | ES_CENTER, 400, 250, 80, 30, hWnd, (HMENU)192, NULL, NULL);
+    adminManageTeacher.teacherName = CreateWindow(TEXT("EDIT"), TEXT(""), WS_CHILD | ES_CENTER, 240, 320, 300, 30, hWnd, (HMENU)193, NULL, NULL);
+    adminManageTeacher.mondayStatic = CreateWindow(TEXT("static"), TEXT("Monday"), WS_CHILD | ES_CENTER, 65, 375, 100, 30, hWnd, NULL, NULL, NULL);
+    adminManageTeacher.tuesdayStatic = CreateWindow(TEXT("static"), TEXT("Tuesday"), WS_CHILD | ES_CENTER, 175, 375, 100, 30, hWnd, NULL, NULL, NULL);
+    adminManageTeacher.wednesdayStatic = CreateWindow(TEXT("static"), TEXT("Wednesday"), WS_CHILD | ES_CENTER, 285, 375, 100, 30, hWnd, NULL, NULL, NULL);
+    adminManageTeacher.thursdayStatic = CreateWindow(TEXT("static"), TEXT("Thursday"), WS_CHILD | ES_CENTER, 395, 375, 100, 30, hWnd, NULL, NULL, NULL);
+    adminManageTeacher.fridayStatic = CreateWindow(TEXT("static"), TEXT("Friday"), WS_CHILD | ES_CENTER, 505, 375, 100, 30, hWnd, NULL, NULL, NULL);
+    adminManageTeacher.saturdayStatic = CreateWindow(TEXT("static"), TEXT("Saturday"), WS_CHILD | ES_CENTER, 615, 375, 100, 30, hWnd, NULL, NULL, NULL);
+    adminManageTeacher.mondayBool = CreateWindowEx(0, WC_COMBOBOX, NULL, CBS_DROPDOWNLIST | WS_CHILD, 65, 410, 100, 80, hWnd, (HMENU)194, NULL, NULL);
+    adminManageTeacher.tuesdayBool = CreateWindowEx(0, WC_COMBOBOX, NULL, CBS_DROPDOWNLIST | WS_CHILD, 175, 410, 100, 80, hWnd, (HMENU)195, NULL, NULL);
+    adminManageTeacher.wednesdayBool = CreateWindowEx(0, WC_COMBOBOX, NULL, CBS_DROPDOWNLIST | WS_CHILD, 285, 410, 100, 80, hWnd, (HMENU)196, NULL, NULL);
+    adminManageTeacher.thursdayBool = CreateWindowEx(0, WC_COMBOBOX, NULL, CBS_DROPDOWNLIST | WS_CHILD, 395, 410, 100, 80, hWnd, (HMENU)197, NULL, NULL);
+    adminManageTeacher.fridayBool = CreateWindowEx(0, WC_COMBOBOX, NULL, CBS_DROPDOWNLIST | WS_CHILD, 505, 410, 100, 80, hWnd, (HMENU)198, NULL, NULL);
+    adminManageTeacher.saturdayBool = CreateWindowEx(0, WC_COMBOBOX, NULL, CBS_DROPDOWNLIST | WS_CHILD, 615, 410, 100, 80, hWnd, (HMENU)199, NULL, NULL);
+    adminManageTeacher.update = CreateWindow(TEXT("button"), TEXT("Update"), WS_BORDER | WS_CHILD, 400, 480, 80, 30, hWnd, (HMENU)200, NULL, NULL);
+    adminManageTeacher.previous = CreateWindow(TEXT("button"), TEXT("Back"), WS_BORDER | WS_CHILD, 300, 480, 80, 30, hWnd, (HMENU)201, NULL, NULL);
+
+    auto sqliteHandler = SQLiteHandler::getInstance("courseScheduleDB.sqlite");
+    TeacherManagement allTeachers;
+    try {
+        allTeachers = sqliteHandler->getTeachers();
+    }
+    catch (const std::runtime_error& e) {
+        std::wstring errorMessage = L"Error: " + std::wstring(e.what(), e.what() + strlen(e.what()));
+        MessageBox(hWnd, errorMessage.c_str(), TEXT("Database Error"), MB_OK | MB_ICONERROR);
+    }
+
+    const auto& ids = allTeachers.getIds();
+    const auto& names = allTeachers.getNames();
+
+    SendMessage(adminManageTeacher.teacherList, CB_RESETCONTENT, 0, 0);
+    for (size_t i = 0; i < names.size(); ++i) {
+        std::wstring wideName = convertToWideString(names[i]);
+        LRESULT index = SendMessage(adminManageTeacher.teacherList, CB_ADDSTRING, 0, (LPARAM)wideName.c_str());
+        SendMessage(adminManageTeacher.teacherList, CB_SETITEMDATA, index, (LPARAM)ids[i]);
+    }
+
+    std::vector<std::wstring> boolOptions = { L"True", L"False" };
+    std::vector<HWND> boolComboBoxes = {
+        adminManageTeacher.mondayBool,
+        adminManageTeacher.tuesdayBool,
+        adminManageTeacher.wednesdayBool,
+        adminManageTeacher.thursdayBool,
+        adminManageTeacher.fridayBool,
+        adminManageTeacher.saturdayBool
+    };
+
+    for (HWND comboBox : boolComboBoxes) {
+        SendMessage(comboBox, CB_RESETCONTENT, 0, 0);
+        for (const auto& option : boolOptions) {
+            SendMessage(comboBox, CB_ADDSTRING, 0, (LPARAM)option.c_str());
+        }
+        SendMessage(comboBox, CB_SETCURSEL, -1, 0);
+    }
+
+    // Apply fonts to controls
+    SendMessage(adminManageTeacher.header, WM_SETFONT, (WPARAM)hFontH1, TRUE);
+    //SendMessage(adminManageTeacher.classList, WM_SETFONT, (WPARAM)hFontH3, TRUE);
+    /*SendMessage(adminManageTeacher.fetch, WM_SETFONT, (WPARAM)hFontH2, TRUE);
+    SendMessage(adminManageTeacher.className, WM_SETFONT, (WPARAM)hFontH2, TRUE);
+    SendMessage(adminManageTeacher.classFloor, WM_SETFONT, (WPARAM)hFontH2, TRUE);
+    SendMessage(adminManageTeacher.classCategory, WM_SETFONT, (WPARAM)hFontH2, TRUE);
+    SendMessage(adminManageTeacher.deleteClass, WM_SETFONT, (WPARAM)hFontH2, TRUE);
+    SendMessage(adminManageTeacher.previous, WM_SETFONT, (WPARAM)hFontH3, TRUE);
+    SendMessage(adminManageTeacher.update, WM_SETFONT, (WPARAM)hFontH3, TRUE);*/
+}
+
+void WindowHandler::setAdminManageTeacherVisibility(bool visible) {
+    int cmdShow = visible ? SW_SHOW : SW_HIDE;
+    ShowWindow(adminManageTeacher.header, cmdShow);
+    ShowWindow(adminManageTeacher.teacherList, cmdShow);
+    ShowWindow(adminManageTeacher.fetch, cmdShow);
+    ShowWindow(adminManageTeacher.deleteTeacher, cmdShow);
+    ShowWindow(adminManageTeacher.teacherName, cmdShow);
+    ShowWindow(adminManageTeacher.mondayStatic, cmdShow);
+    ShowWindow(adminManageTeacher.mondayBool, cmdShow);
+    ShowWindow(adminManageTeacher.tuesdayStatic, cmdShow);
+    ShowWindow(adminManageTeacher.tuesdayBool, cmdShow);
+    ShowWindow(adminManageTeacher.wednesdayStatic, cmdShow);
+    ShowWindow(adminManageTeacher.wednesdayBool, cmdShow);
+    ShowWindow(adminManageTeacher.thursdayStatic, cmdShow);
+    ShowWindow(adminManageTeacher.thursdayBool, cmdShow);
+    ShowWindow(adminManageTeacher.fridayStatic, cmdShow);
+    ShowWindow(adminManageTeacher.fridayBool, cmdShow);
+    ShowWindow(adminManageTeacher.saturdayStatic, cmdShow);
+    ShowWindow(adminManageTeacher.saturdayBool, cmdShow);
+    ShowWindow(adminManageTeacher.previous, cmdShow);
+    ShowWindow(adminManageTeacher.update, cmdShow);
 }
 
 /* Add Teacher */
@@ -520,7 +721,6 @@ void WindowHandler::createAdminManageRoomWindows(HWND hWnd) {
     adminManageRoom.previous = CreateWindow(TEXT("button"), TEXT("Back"), WS_BORDER | WS_CHILD, 300, 480, 80, 30, hWnd, (HMENU)184, NULL, NULL);
 
     auto sqliteHandler = SQLiteHandler::getInstance("courseScheduleDB.sqlite");
-
     RoomManagement allClassrooms;
     try {
         allClassrooms = sqliteHandler->getClassrooms();
@@ -530,11 +730,15 @@ void WindowHandler::createAdminManageRoomWindows(HWND hWnd) {
         MessageBox(hWnd, errorMessage.c_str(), TEXT("Database Error"), MB_OK | MB_ICONERROR);
     }
 
+    const auto& ids = allClassrooms.getIds();
     const auto& names = allClassrooms.getNames();
 
-    for (const auto& name : names) {
-        std::wstring wideName = convertToWideString(name);
-        SendMessage(adminManageRoom.classList, CB_ADDSTRING, 0, (LPARAM)wideName.c_str());
+    SendMessage(adminManageRoom.classList, CB_RESETCONTENT, 0, 0);
+
+    for (size_t i = 0; i < names.size(); ++i) {
+        std::wstring wideName = convertToWideString(names[i]);
+        LRESULT index = SendMessage(adminManageRoom.classList, CB_ADDSTRING, 0, (LPARAM)wideName.c_str());
+        SendMessage(adminManageRoom.classList, CB_SETITEMDATA, index, (LPARAM)ids[i]);
     }
 
     // Apply fonts to controls
@@ -663,8 +867,8 @@ void WindowHandler::createTeacherLoginWindows(HWND hWnd) {
     teacherLogin.usernameInput = CreateWindow(TEXT("EDIT"), TEXT(""), WS_BORDER | WS_CHILD, 370, 180, 180, 20, hWnd, NULL, NULL, NULL);
     teacherLogin.password = CreateWindow(TEXT("static"), TEXT("Password ="), WS_CHILD | ES_CENTER, 240, 240, 120, 20, hWnd, NULL, NULL, NULL);
     teacherLogin.passwordInput = CreateWindow(TEXT("EDIT"), TEXT(""), WS_BORDER | WS_CHILD | ES_PASSWORD, 370, 240, 180, 20, hWnd, NULL, NULL, NULL);
-    teacherLogin.previous = CreateWindow(TEXT("button"), TEXT("Back"), WS_BORDER | WS_CHILD, 310, 300, 80, 30, hWnd, (HMENU)201, NULL, NULL);
-    teacherLogin.proceed = CreateWindow(TEXT("button"), TEXT("Login"), WS_BORDER | WS_CHILD, 410, 300, 80, 30, hWnd, (HMENU)202, NULL, NULL);
+    teacherLogin.previous = CreateWindow(TEXT("button"), TEXT("Back"), WS_BORDER | WS_CHILD, 310, 300, 80, 30, hWnd, (HMENU)301, NULL, NULL);
+    teacherLogin.proceed = CreateWindow(TEXT("button"), TEXT("Login"), WS_BORDER | WS_CHILD, 410, 300, 80, 30, hWnd, (HMENU)302, NULL, NULL);
 
     // Apply fonts to controls
     SendMessage(teacherLogin.header, WM_SETFONT, (WPARAM)hFontH1, TRUE);
@@ -702,8 +906,8 @@ void WindowHandler::createStudentLoginWindows(HWND hWnd) {
     studentLogin.usernameInput = CreateWindow(TEXT("EDIT"), TEXT(""), WS_BORDER | WS_CHILD, 370, 180, 180, 20, hWnd, NULL, NULL, NULL);
     studentLogin.password = CreateWindow(TEXT("static"), TEXT("Password ="), WS_CHILD | ES_CENTER, 240, 240, 120, 20, hWnd, NULL, NULL, NULL);
     studentLogin.passwordInput = CreateWindow(TEXT("EDIT"), TEXT(""), WS_BORDER | WS_CHILD | ES_PASSWORD, 370, 240, 180, 20, hWnd, NULL, NULL, NULL);
-    studentLogin.previous = CreateWindow(TEXT("button"), TEXT("Back"), WS_BORDER | WS_CHILD, 310, 300, 80, 30, hWnd, (HMENU)301, NULL, NULL);
-    studentLogin.proceed = CreateWindow(TEXT("button"), TEXT("Login"), WS_BORDER | WS_CHILD, 410, 300, 80, 30, hWnd, (HMENU)302, NULL, NULL);
+    studentLogin.previous = CreateWindow(TEXT("button"), TEXT("Back"), WS_BORDER | WS_CHILD, 310, 300, 80, 30, hWnd, (HMENU)401, NULL, NULL);
+    studentLogin.proceed = CreateWindow(TEXT("button"), TEXT("Login"), WS_BORDER | WS_CHILD, 410, 300, 80, 30, hWnd, (HMENU)402, NULL, NULL);
 
     // Apply fonts to controls
     SendMessage(studentLogin.header, WM_SETFONT, (WPARAM)hFontH1, TRUE);

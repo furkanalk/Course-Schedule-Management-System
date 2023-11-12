@@ -21,15 +21,22 @@ public:
 
     ~SQLiteHandler();
 
-    static SQLiteHandler* getInstance(const std::string& databaseName);
+    static SQLiteHandler* getInstance(const std::string databaseName);
 
-    bool insertTeacher(const std::string& fullname, const std::string& course,
-        int monday, int tuesday, int wednesday, int thursday, int friday, int saturday);
+    bool insertTeacher(std::string fullname, std::string course, int monday, int tuesday, int wednesday, int thursday, int friday, int saturday);
+    bool updateTeacher(TeacherManagement& updatedTeachers);
+    bool deleteTeacher(TeacherManagement& teachers);
+    TeacherManagement getTeachers();
 
-    bool insertRoom(const std::string& name, const std::string& floor, const std::string& category);
-    const RoomManagement getClassrooms();
+    bool insertRoom(std::string name, std::string floor, std::string category);
+    bool updateRoom(RoomManagement& updatedClassrooms);
+    bool deleteRoom(RoomManagement& rooms);
+    RoomManagement getClassrooms();
 
-    bool insertCourse(const std::string& courseName, const std::vector<std::string>& classNames);
+    bool insertCourse(const std::string courseName, const std::vector<std::string> classNames);
+    bool updateCourse(CourseManagement& updatedCourses);
+    bool deleteCourse(CourseManagement& courses);
+    CourseManagement getCourses();
 };
 
 #endif

@@ -3,6 +3,7 @@
 #include "course.h"
 #include "SQLiteHandler.h"
 #include "resource.h"
+#include "handlers.h"
 #include "windows.h"
 #include <memory>
 
@@ -82,33 +83,27 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 // Window Handlers
 
 /* Login Types */
-void HandleLoginTypes(int wmID, HWND hWnd, Admin& userAdmin, User& userTeacher, User& userStudent) {
+void HandleLoginTypes(int wmID, HWND hWnd, User& userAdmin, User& userTeacher, User& userStudent) {
     switch (wmID) { 
-        case 401:
+        case 501:
             userAdmin.login(hWnd);
             break;
-        case 402:
+        case 502:
             userTeacher.showInterface(hWnd);
             break;
-        case 403:
+        case 503:
             userStudent.showInterface(hWnd);
             break;
     }
 }
 
 /* Admin Windows */
-void HandleAdminLogin(int wmId, HWND hWnd, Admin& actualAdmin,
-    User& userAdmin, User& userTeacher, User& userStudent, User& user) {
+void HandleAdminLogin(int wmId, HWND hWnd, User& userAdmin, User& userTeacher, User& userStudent, User& user) {
     
-    static std::unique_ptr<User> gradeMngt = std::make_unique<GradeManagement>();
+    //static std::unique_ptr<User> gradeMngt = std::make_unique<GradeManagement>();
     static std::unique_ptr<User> roomMngt = std::make_unique<RoomManagement>();
     static std::unique_ptr<User> courseMngt = std::make_unique<CourseManagement>();
     static std::unique_ptr<User> teacherMngt = std::make_unique<TeacherManagement>();
-
-    static std::unique_ptr<Admin> courseData = std::make_unique<CourseManagement>();
-    static std::unique_ptr<Admin> teacherData = std::make_unique<TeacherManagement>();
-    static std::unique_ptr<Admin> gradeData = std::make_unique<GradeManagement>();
-    static std::unique_ptr<Admin> roomData = std::make_unique<RoomManagement>();
 
     switch (wmId) {
         /* Admin Login */
@@ -140,9 +135,13 @@ void HandleAdminLogin(int wmId, HWND hWnd, Admin& actualAdmin,
         break;
 
         /* Course Management */
+    case 122:
+        // go to Manage Course from Course Management (proceed)
+        courseMngt->manageData(hWnd);
+        break;
     case 123:
         // go to Add Course from Course Management (back)
-        courseData->addData(hWnd);
+        courseMngt->addData(hWnd);
         break;
     case 124:
         // back to Admin Interface from Course Management (back)
@@ -153,6 +152,11 @@ void HandleAdminLogin(int wmId, HWND hWnd, Admin& actualAdmin,
         user.showInterface(hWnd);
         break;
 
+        /* Courses Manage Course */
+    case 216:
+        // back to Course Management from Manage Course (back)
+        courseMngt->showInterface(hWnd);
+        break;
         /* Add Course */
     case 151:
         // back to Course Management from Add Course (back)
@@ -160,13 +164,17 @@ void HandleAdminLogin(int wmId, HWND hWnd, Admin& actualAdmin,
         break;
     case 152:
         // insert a new Course to Database (insert)
-        courseData->insertToDB(hWnd);
+        courseMngt->insertToDB(hWnd);
         break;
 
         /* Teacher Management */
+    case 131:
+        // go to Manage Teacher from Teacher Management (proceed)
+        teacherMngt->manageData(hWnd);
+        break;
     case 132:
         // go to Admin Add Teacher from Teacher Management (proceed)
-        teacherData->addData(hWnd);
+        teacherMngt->addData(hWnd);
         break;
     case 133:
         // back to Teacher Management from Teacher Add (back)
@@ -176,6 +184,12 @@ void HandleAdminLogin(int wmId, HWND hWnd, Admin& actualAdmin,
         // back to Login Types from Teacher Management (exit)
         user.showInterface(hWnd);
         break;
+    
+        /* Teacher Manage Teachers */
+    case 201:
+        // back to Teacher Management from Manage Teachers
+        teacherMngt->showInterface(hWnd);
+        break;
 
         /* Add Teacher */
     case 141:
@@ -184,7 +198,7 @@ void HandleAdminLogin(int wmId, HWND hWnd, Admin& actualAdmin,
         break;
     case 142:
         // insert a new Teacher to Database (insert)
-        teacherData->insertToDB(hWnd);
+        teacherMngt->insertToDB(hWnd);
         break;
 
         /* Classroom Management */
@@ -194,7 +208,7 @@ void HandleAdminLogin(int wmId, HWND hWnd, Admin& actualAdmin,
         break;
     case 162:
         // go to Add Room from Room Management (back)
-        roomData->addData(hWnd);
+        roomMngt->addData(hWnd);
         break;
     case 163:
         // back to Admin Interface from Room Management (back)
@@ -218,7 +232,7 @@ void HandleAdminLogin(int wmId, HWND hWnd, Admin& actualAdmin,
         break;
     case 172:
         // insert a new classroom to Database (insert)
-        roomData->insertToDB(hWnd);
+        roomMngt->insertToDB(hWnd);
         break;
     //case 172:
     //    // back to Login Types from Room Management (exit)
@@ -230,7 +244,7 @@ void HandleAdminLogin(int wmId, HWND hWnd, Admin& actualAdmin,
 void HandleTeacherLogin(int wmId, HWND hWnd, User& user) {
     switch (wmId) {
         // back to Login Types from Teacher Login (back)
-        case 201:
+        case 301:
             user.showInterface(hWnd);
             break;
     }
@@ -239,7 +253,7 @@ void HandleTeacherLogin(int wmId, HWND hWnd, User& user) {
 void HandleStudentLogin(int wmId, HWND hWnd, User& user) {
     switch (wmId) {
         // back to Login Types from Student Login (back)
-        case 301:
+        case 401:
             user.showInterface(hWnd);
             break;
         }
@@ -276,13 +290,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     static HBRUSH hbrBkgnd = CreateSolidBrush(RGB(200, 200, 255));
   
-    static User user;
-    // User's children
+    static std::unique_ptr<User> user = std::make_unique<User>();
+    static std::unique_ptr<RoomManagement> roomMngmt = std::make_unique<RoomManagement>();
+    static std::unique_ptr<TeacherManagement> teacherMngmt = std::make_unique<TeacherManagement>();
+    static std::unique_ptr<CourseManagement> courseMngmt = std::make_unique<CourseManagement>();
+
     static std::unique_ptr<User> userAdmin = std::make_unique<Admin>();
     static std::unique_ptr<User> userTeacher = std::make_unique<Teacher>();
     static std::unique_ptr<User> userStudent = std::make_unique<Student>();
 
-    auto* actualAdmin = dynamic_cast<Admin*>(userAdmin.get());
 
     switch (message)
     {
@@ -294,13 +310,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     }
 
     case WM_CREATE:
-        user.showInterface(hWnd);
+        user->showInterface(hWnd);
         break;
 
     case WM_COMMAND:
     {
         int wmId = LOWORD(wParam);
+        int wmEvent = HIWORD(wParam);
+
         HWND hComboBox = GetDlgItem(hWnd, 180);
+        HWND hTeacherComboBox = GetDlgItem(hWnd, 190);
+        HWND hCourseComboBox = GetDlgItem(hWnd, 210);
 
         if (wmId == 150 && HIWORD(wParam) == LBN_SELCHANGE) {
             HWND hListBox = GetDlgItem(hWnd, 150);
@@ -310,15 +330,116 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             if (selectedCount > 2)
                 MessageBox(hWnd, L"Only two selections are allowed.", L"Selection Limit", MB_ICONWARNING | MB_OK);
         }
+        static int previousSelectionIndex = -1;
 
+        // Course fetch
+        if (wmId == 211) {
+            try {
+                HWND hCourseComboBox = GetDlgItem(hWnd, 210);
+                int idx = SendMessage(hCourseComboBox, CB_GETCURSEL, 0, 0);
+                if (idx == CB_ERR) {
+                    MessageBox(hWnd, L"Please make a selection.", L"Selection Error", MB_ICONWARNING | MB_OK);
+                    return 0;
+                }
+
+                SQLiteHandler* dbHandler = SQLiteHandler::getInstance("courseScheduleDB.sqlite");
+                CourseManagement allCourses = dbHandler->getCourses();
+
+                auto courseNames = allCourses.getNames();
+                auto courseRoomNames = allCourses.getRooms()[idx];
+
+                HWND hNameInput = GetDlgItem(hWnd, 213);
+                SetWindowText(hNameInput, std::wstring(courseNames[idx].begin(), courseNames[idx].end()).c_str());
+
+                HWND hFirstRoomInput = GetDlgItem(hWnd, 218);
+                HWND hSecondRoomInput = GetDlgItem(hWnd, 219);
+
+                if (courseRoomNames.size() >= 1) {
+                    SetWindowText(hFirstRoomInput, std::wstring(courseRoomNames[0].begin(), courseRoomNames[0].end()).c_str());
+                }
+                else {
+                    SetWindowText(hFirstRoomInput, L"-Empty-");
+                }
+
+                if (courseRoomNames.size() >= 2) {
+                    SetWindowText(hSecondRoomInput, std::wstring(courseRoomNames[1].begin(), courseRoomNames[1].end()).c_str());
+                }
+                else {
+                    SetWindowText(hSecondRoomInput, L"-Empty-");
+                }
+            }
+            catch (const std::exception& e) {
+                std::wstring errorMessage = L"Error fetching course data: " + std::wstring(e.what(), e.what() + std::strlen(e.what()));
+                MessageBox(hWnd, errorMessage.c_str(), L"Database Error", MB_OK | MB_ICONERROR);
+            }
+            return 0;
+        }
+
+        if (wmId == 215) { // Update course
+            if (!courseMngmt->updateCourse(hWnd, hCourseComboBox)) { return 0; }
+        }
+        if (wmId == 212) { // Update course
+            if (!courseMngmt->removeCourse(hWnd, hCourseComboBox)) { return 0; }
+        }
+
+        // Teacher fetch
+        if (wmId == 191) {
+            try {
+                int itemCount = (int)SendMessage(hTeacherComboBox, CB_GETCOUNT, 0, 0);
+                int idx = (int)SendMessage(hTeacherComboBox, CB_GETCURSEL, 0, 0);
+
+                if (idx == CB_ERR) {
+                    MessageBox(hWnd, L"Please make a selection.", L"Selection Error", MB_ICONWARNING | MB_OK);
+                    break;
+                }
+
+                SQLiteHandler* dbHandler = SQLiteHandler::getInstance("courseScheduleDB.sqlite");
+                TeacherManagement allTeachers = dbHandler->getTeachers();
+
+                WindowHandler* wh = WindowHandler::getInstance();
+                std::wstring teacherName = wh->convertToWideString(allTeachers.getNames()[idx]);
+                SetWindowText(GetDlgItem(hWnd, 193), teacherName.c_str());
+
+                auto workdays = allTeachers.getWorkdays()[idx];
+                HWND hMonday = GetDlgItem(hWnd, 194);
+                HWND hTuesday = GetDlgItem(hWnd, 195);
+                HWND hWednesday = GetDlgItem(hWnd, 196);
+                HWND hThursday = GetDlgItem(hWnd, 197);
+                HWND hFriday = GetDlgItem(hWnd, 198);
+                HWND hSaturday = GetDlgItem(hWnd, 199);
+
+                SendMessage(hMonday, CB_SETCURSEL, workdays[0] ? 0 : 1, 0);
+                SendMessage(hTuesday, CB_SETCURSEL, workdays[1] ? 0 : 1, 0);
+                SendMessage(hWednesday, CB_SETCURSEL, workdays[2] ? 0 : 1, 0);
+                SendMessage(hThursday, CB_SETCURSEL, workdays[3] ? 0 : 1, 0);
+                SendMessage(hFriday, CB_SETCURSEL, workdays[4] ? 0 : 1, 0);
+                SendMessage(hSaturday, CB_SETCURSEL, workdays[5] ? 0 : 1, 0);
+            }
+            catch (const std::runtime_error& e) {
+                std::wstring errorMessage = L"Error: " + std::wstring(e.what(), e.what() + strlen(e.what()));
+                MessageBox(hWnd, errorMessage.c_str(), L"Database Error", MB_OK | MB_ICONERROR);
+            }
+        }
+
+        if (wmId == 200) { // Update teacher
+            if (!teacherMngmt->updateTeacher(hWnd, hTeacherComboBox)) { return 0; }
+        }
+
+        if (wmId == 192) { // Delete teacher
+            if (!teacherMngmt->removeTeacher(hWnd, hTeacherComboBox)) { return 0; }
+        }
+
+        // Classroom fetch
         if (wmId == 181) {
             try {
-                HWND hComboBox = GetDlgItem(hWnd, 180);
+                int idx = (int)SendMessage(hComboBox, CB_GETCURSEL, 0, 0);
+                if (idx == CB_ERR) {
+                    MessageBox(hWnd, L"Please make a selection.", L"Selection Error", MB_ICONWARNING | MB_OK);
+                    break;
+                }
 
                 SQLiteHandler* dbHandler = SQLiteHandler::getInstance("courseScheduleDB.sqlite");
                 RoomManagement allClassrooms = dbHandler->getClassrooms();
-
-                int idx = (int)SendMessage(hComboBox, CB_GETCURSEL, 0, 0);
 
                 const auto& names = allClassrooms.getNames();
                 const auto& floors = allClassrooms.getFloors();
@@ -336,36 +457,54 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 SetWindowText(hNameInput, name.c_str());
                 SetWindowText(hFloorInput, floor.c_str());
                 SetWindowText(hCategoryInput, category.c_str());
-
-                //SendMessage(hComboBox, CB_SETCURSEL, (WPARAM)-1, 0);
             }
             catch (const std::runtime_error& e) {
                 std::wstring errorMessage = L"Error: " + std::wstring(e.what(), e.what() + strlen(e.what()));
                 MessageBox(hWnd, errorMessage.c_str(), L"Database Error", MB_OK | MB_ICONERROR);
             }
-            break;
+        }
+
+        if (wmId == 183) { // Update classroom
+            if (!roomMngmt->updateRoom(hWnd, hComboBox)) { return 0; }
+        }
+        if (wmId == 182) { // Delete classroom
+            if (!roomMngmt->removeRoom(hWnd, hComboBox)) { return 0; }
         }
 
         if (wmId == IDM_EXIT)
             DestroyWindow(hWnd);
 
         // Login Types
-        if (wmId >= 400 && wmId < 500)
-            HandleLoginTypes(wmId, hWnd, *actualAdmin, *userTeacher, *userStudent);
+        if (wmId >= 500 && wmId < 600)
+            HandleLoginTypes(wmId, hWnd, *userAdmin, *userTeacher, *userStudent);
 
         // Admin Windows
-        if (wmId >= 100 && wmId < 200)
-            HandleAdminLogin(wmId, hWnd, *actualAdmin, *userAdmin, *userTeacher, *userStudent, user);
+        if (wmId >= 100 && wmId < 300)
+            HandleAdminLogin(wmId, hWnd, *userAdmin, *userTeacher, *userStudent, *user);
 
         // Teacher Windows
-        if (wmId >= 200 && wmId < 300)
-            HandleTeacherLogin(wmId, hWnd, user);
+        if (wmId >= 300 && wmId < 400)
+            HandleTeacherLogin(wmId, hWnd, *user);
 
         // Grade Windows
-        if (wmId >= 300 && wmId < 400)
-            HandleStudentLogin(wmId, hWnd, user);
+        if (wmId >= 400 && wmId < 500)
+            HandleStudentLogin(wmId, hWnd, *user);
 
         return DefWindowProc(hWnd, message, wParam, lParam);    
+    }
+
+    case WM_SHOWWINDOW:
+    {
+        HWND hComboBox = GetDlgItem(hWnd, 180);
+        if (wParam == TRUE) { // Pencere gösteriliyor
+            OutputDebugString(L"WM_SHOWWINDOW: Pencere gösteriliyor, ComboBox yenileniyor.\n");
+            // ComboBox'ý sýfýrla (Eðer bu adýmý yapmak isterseniz)
+            SendMessage(hComboBox, CB_RESETCONTENT, 0, 0);
+        }
+        else {
+            OutputDebugString(L"WM_SHOWWINDOW: Pencere gizleniyor.\n");
+        }
+        break;
     }
 
     case WM_DESTROY:
