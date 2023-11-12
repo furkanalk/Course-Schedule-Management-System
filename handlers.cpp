@@ -252,7 +252,6 @@ void WindowHandler::createAdminManageCourseWindows(HWND hWnd) {
     auto ids = allCourses.getIds();
     auto names = allCourses.getNames();
 
-    // Ensure that the ComboBox is empty before adding new items
     SendMessage(adminManageCourse.courseList, CB_RESETCONTENT, 0, 0);
 
     for (size_t i = 0; i < names.size(); ++i) {
