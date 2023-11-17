@@ -95,7 +95,7 @@ void WindowHandler::createLoginTypeWindows(HWND hWnd) {
     HFONT hFontH2 = CreateFont(24, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
 
     // Window Controls
-    loginType.welcome = CreateWindow(TEXT("static"), TEXT("Welcome to our\nCourse Schedule\nManagement System!"), SS_CENTER | WS_CHILD , 100, 20, 600, 100, hWnd, NULL, NULL, NULL);
+    loginType.welcome = CreateWindow(TEXT("static"), TEXT("Welcome to our\nCourse Schedule\nManagement System!"), SS_CENTER | WS_CHILD, 100, 20, 600, 100, hWnd, NULL, NULL, NULL);
     loginType.admin = CreateWindow(TEXT("button"), TEXT("Admin"), WS_CHILD, 260, 160, 300, 100, hWnd, (HMENU)501, NULL, NULL);
     loginType.teacher = CreateWindow(TEXT("button"), TEXT("Teacher"), WS_CHILD, 260, 270, 300, 100, hWnd, (HMENU)502, NULL, NULL);
     loginType.student = CreateWindow(TEXT("button"), TEXT("Grade"), WS_CHILD, 260, 390, 300, 100, hWnd, (HMENU)503, NULL, NULL);
@@ -313,7 +313,7 @@ void WindowHandler::createAdminAddCourseWindows(HWND hWnd) {
     // Window Controls
     adminAddCourse.header = CreateWindow(TEXT("static"), TEXT("- Administrator Panel -"), WS_CHILD | ES_CENTER, 100, 80, 600, 450, hWnd, NULL, NULL, NULL);
     adminAddCourse.course = CreateWindow(TEXT("static"), TEXT("Course Name ="), WS_CHILD | ES_CENTER, 220, 150, 120, 20, hWnd, NULL, NULL, NULL);
-    adminAddCourse.courseInput = CreateWindow(TEXT("EDIT"), TEXT(""), WS_BORDER | WS_CHILD, 350, 150, 220, 25, hWnd, NULL, NULL, NULL);
+    adminAddCourse.courseInput = CreateWindow(TEXT("EDIT"), TEXT(""), WS_BORDER | WS_CHILD, 350, 150, 220, 25, hWnd, (HMENU)153, NULL, NULL);
     adminAddCourse.headerSecond = CreateWindow(TEXT("static"), TEXT("Select Classes"), WS_CHILD | ES_CENTER, 320, 250, 160, 40, hWnd, NULL, NULL, NULL);
 
     auto sqliteHandler = SQLiteHandler::getInstance("courseScheduleDB.sqlite");
@@ -344,7 +344,7 @@ void WindowHandler::createAdminAddCourseWindows(HWND hWnd) {
 
         int roomId = ids[i];
         if (roomId <= 0) {
-            MessageBox(hWnd, _T("Error retrieving id for list box item."), _T("Erro: ID is invalid"),MB_ICONERROR | MB_OK); 
+            MessageBox(hWnd, _T("Error retrieving id for list box item."), _T("Erro: ID is invalid"), MB_ICONERROR | MB_OK);
             continue;
         }
         else {
@@ -366,67 +366,6 @@ void WindowHandler::setAdminAddCourseVisibility(bool visible) {
     ShowWindow(adminAddCourse.previous, cmdShow);
     ShowWindow(adminAddCourse.insert, cmdShow);
 }
-
-// Insert Course into Database
-void WindowHandler::insertCourseIntoDatabase(HWND hWnd) {
-    std::wstring courseName = getWindowText(adminAddCourse.courseInput);
-
-    if (courseName.empty()) {
-        displayError(TEXT("Course name cannot be empty!"), hWnd);
-        return;
-    }
-
-    int itemCount = SendMessage(adminAddCourse.classList, LB_GETCOUNT, 0, 0);
-    if (itemCount == LB_ERR) {
-        displayError(TEXT("Error getting item count from listbox."), hWnd);
-        return;
-    }
-
-    std::vector<std::wstring> selectedRoomNames;
-    for (int i = 0; i < itemCount; ++i) {
-        if (SendMessage(adminAddCourse.classList, LB_GETSEL, i, 0) > 0) {
-            int len = SendMessage(adminAddCourse.classList, LB_GETTEXTLEN, i, 0);
-            std::wstring itemText(len + 1, L'\0');
-            SendMessage(adminAddCourse.classList, LB_GETTEXT, i, (LPARAM)itemText.data());
-            itemText.resize(len);
-            size_t pos = itemText.find(L" - ");
-            selectedRoomNames.push_back(pos != std::wstring::npos ? itemText.substr(0, pos) : L"");
-        }
-    }
-
-    if (selectedRoomNames.empty()) {
-        displayError(TEXT("Please select at least one class."), hWnd);
-        return;
-    }
-    if (selectedRoomNames.size() > 2) {
-        displayError(TEXT("Please select no more than two classes."), hWnd);
-        return;
-    }
-
-    std::string courseName_utf8(courseName.begin(), courseName.end());
-
-    try {
-        auto sqliteHandler = SQLiteHandler::getInstance("courseScheduleDB.sqlite");
-
-        std::vector<std::string> roomNamesForInsertion;
-        for (const auto& name : selectedRoomNames) {
-            std::string utf8Name(name.begin(), name.end());
-            roomNamesForInsertion.push_back(utf8Name);
-        }
-
-        if (sqliteHandler->insertCourse(courseName_utf8, roomNamesForInsertion)) {
-            MessageBox(hWnd, TEXT("Course inserted successfully!"), TEXT("Success"), MB_OK | MB_ICONINFORMATION);
-        }
-        else {
-            displayError(TEXT("Failed to insert course."), hWnd);
-        }
-    }
-    catch (const std::runtime_error& e) {
-        std::wstring errorMessage = L"Error: " + std::wstring(e.what(), e.what() + strlen(e.what()));
-        displayError(errorMessage.c_str(), hWnd);
-    }
-}
-
 
 /* Teacher Management */
 void WindowHandler::createAdminTeacherManagementWindows(HWND hWnd) {
@@ -571,9 +510,9 @@ void WindowHandler::createAdminAddTeacherWindows(HWND hWnd) {
     // Window Controls
     adminAddTeacher.header = CreateWindow(TEXT("static"), TEXT("- Administrator Panel -"), WS_CHILD | ES_CENTER, 100, 80, 600, 450, hWnd, NULL, NULL, NULL);
     adminAddTeacher.fullname = CreateWindow(TEXT("static"), TEXT("Full Name ="), WS_CHILD | ES_CENTER, 220, 150, 120, 20, hWnd, NULL, NULL, NULL);
-    adminAddTeacher.fullnameInput = CreateWindow(TEXT("EDIT"), TEXT(""), WS_BORDER | WS_CHILD, 350, 150, 220, 25, hWnd, NULL, NULL, NULL);
+    adminAddTeacher.fullnameInput = CreateWindow(TEXT("EDIT"), TEXT(""), WS_BORDER | WS_CHILD, 350, 150, 220, 25, hWnd, HMENU(149), NULL, NULL);
     adminAddTeacher.course = CreateWindow(TEXT("static"), TEXT("Course ="), WS_CHILD | ES_CENTER, 230, 200, 120, 20, hWnd, NULL, NULL, NULL);
-    adminAddTeacher.courseInput = CreateWindow(TEXT("EDIT"), TEXT(""), WS_BORDER | WS_CHILD, 350, 200, 220, 25, hWnd, NULL, NULL, NULL);
+    adminAddTeacher.courseInput = CreateWindow(TEXT("EDIT"), TEXT(""), WS_BORDER | WS_CHILD, 350, 200, 220, 25, hWnd, HMENU(140), NULL, NULL);
     adminAddTeacher.headerSecond = CreateWindow(TEXT("static"), TEXT("Work Days"), WS_CHILD | ES_CENTER, 320, 250, 160, 40, hWnd, NULL, NULL, NULL);
     adminAddTeacher.monday = CreateWindow(TEXT("button"), TEXT("Monday"), WS_CHILD | ES_CENTER | BS_CHECKBOX, 360, 300, 160, 20, hWnd, (HMENU)143, NULL, NULL);
     adminAddTeacher.tuesday = CreateWindow(TEXT("button"), TEXT("Tuesday"), WS_CHILD | ES_CENTER | BS_CHECKBOX, 360, 320, 160, 20, hWnd, (HMENU)144, NULL, NULL);
@@ -617,57 +556,6 @@ void WindowHandler::setAdminAddTeacherVisibility(bool visible) {
     ShowWindow(adminAddTeacher.saturday, cmdShow);
     ShowWindow(adminAddTeacher.previous, cmdShow);
     ShowWindow(adminAddTeacher.insert, cmdShow);
-}
-
-// Insert Teacher into DB
-void WindowHandler::insertTeacherIntoDatabase(HWND hWnd) {
-    std::wstring fullname = getWindowText(adminAddTeacher.fullnameInput);
-    std::wstring course = getWindowText(adminAddTeacher.courseInput);
-
-    if (fullname.empty() || course.empty()) {
-        MessageBox(NULL, TEXT("Full name and course cannot be empty!"), TEXT("Input Required"), MB_OK | MB_ICONERROR);
-        return;
-    }
-
-    std::vector<HWND> workdays = {
-        adminAddTeacher.monday, adminAddTeacher.tuesday, adminAddTeacher.wednesday,
-        adminAddTeacher.thursday, adminAddTeacher.friday, adminAddTeacher.saturday
-    };
-
-    bool workdaySelected = std::any_of(workdays.begin(), workdays.end(), [hWnd](HWND checkboxHwnd) {
-        return SendMessage(checkboxHwnd, BM_GETCHECK, 0, 0) == BST_CHECKED;
-        });
-
-    if (!workdaySelected) {
-        MessageBox(NULL, TEXT("At least one workday must be selected!"), TEXT("Selection Required"), MB_OK | MB_ICONERROR);
-        return;
-    }
-
-    std::string fullname_utf8(fullname.begin(), fullname.end());
-    std::string course_utf8(course.begin(), course.end());
-
-    std::vector<int> workdayValues;
-    for (HWND checkboxHwnd : workdays) {
-        int value = SendMessage(checkboxHwnd, BM_GETCHECK, 0, 0) == BST_CHECKED ? 1 : 0;
-        workdayValues.push_back(value);
-    }
-
-    try {
-        auto sqliteHandler = SQLiteHandler::getInstance("courseScheduleDB.sqlite");
-
-        if (sqliteHandler->insertTeacher(fullname_utf8, course_utf8,
-            workdayValues[0], workdayValues[1], workdayValues[2],
-            workdayValues[3], workdayValues[4], workdayValues[5])) {
-            MessageBox(NULL, TEXT("Data inserted successfully!"), TEXT("Success"), MB_OK | MB_ICONINFORMATION);
-        }
-        else {
-            MessageBox(NULL, TEXT("Failed to insert data."), TEXT("Error"), MB_OK | MB_ICONERROR);
-        }
-    }
-    catch (const std::runtime_error& e) {
-        std::wstring errorMessage = L"Error: " + std::wstring(e.what(), e.what() + strlen(e.what()));
-        MessageBox(hWnd, errorMessage.c_str(), TEXT("Database Error"), MB_OK | MB_ICONERROR);
-    }
 }
 
 /* Room Management */
@@ -775,9 +663,9 @@ void WindowHandler::createAdminAddRoomWindows(HWND hWnd) {
     // Window Controls
     adminAddRoom.header = CreateWindow(TEXT("static"), TEXT("- Administrator Panel -"), WS_CHILD | ES_CENTER, 100, 80, 600, 450, hWnd, NULL, NULL, NULL);
     adminAddRoom.name = CreateWindow(TEXT("static"), TEXT("Classroom ="), WS_CHILD | ES_CENTER, 220, 150, 120, 20, hWnd, NULL, NULL, NULL);
-    adminAddRoom.nameInput = CreateWindow(TEXT("EDIT"), TEXT(""), WS_BORDER | WS_CHILD, 350, 150, 220, 25, hWnd, NULL, NULL, NULL);
+    adminAddRoom.nameInput = CreateWindow(TEXT("EDIT"), TEXT(""), WS_BORDER | WS_CHILD, 350, 150, 220, 25, hWnd, HMENU(173), NULL, NULL);
     adminAddRoom.floor = CreateWindow(TEXT("static"), TEXT("Floor ="), WS_CHILD | ES_CENTER, 245, 200, 120, 20, hWnd, NULL, NULL, NULL);
-    adminAddRoom.floorInput = CreateWindow(TEXT("EDIT"), TEXT(""), WS_BORDER | WS_CHILD, 350, 200, 220, 25, hWnd, NULL, NULL, NULL);
+    adminAddRoom.floorInput = CreateWindow(TEXT("EDIT"), TEXT(""), WS_BORDER | WS_CHILD, 350, 200, 220, 25, hWnd, HMENU(174), NULL, NULL);
     adminAddRoom.headerSecond = CreateWindow(TEXT("static"), TEXT("Room Type"), WS_CHILD | ES_CENTER, 320, 260, 140, 30, hWnd, NULL, NULL, NULL);
     adminAddRoom.category = CreateWindow(TEXT("COMBOBOX"), TEXT(""), CBS_DROPDOWNLIST | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE, 320, 300, 160, 70, hWnd, (HMENU)170, NULL, NULL);
     adminAddRoom.previous = CreateWindow(TEXT("button"), TEXT("Back"), WS_BORDER | WS_CHILD, 300, 480, 80, 30, hWnd, (HMENU)171, NULL, NULL);
@@ -811,44 +699,6 @@ void WindowHandler::setAdminAddRoomVisibility(bool visible) {
     ShowWindow(adminAddRoom.category, cmdShow);
     ShowWindow(adminAddRoom.previous, cmdShow);
     ShowWindow(adminAddRoom.insert, cmdShow);
-}
-
-// Insert Room into DB
-void WindowHandler::insertRoomIntoDatabase(HWND hWnd) {
-    std::wstring roomName = getWindowText(adminAddRoom.nameInput);
-    std::wstring roomFloor = getWindowText(adminAddRoom.floorInput);
-
-    if (roomName.empty() || roomFloor.empty()) {
-        MessageBox(NULL, TEXT("Room Name and floor cannot be empty!"), TEXT("Input Required"), MB_OK | MB_ICONWARNING);
-        return;
-    }
-
-    int idx = SendMessage(adminAddRoom.category, CB_GETCURSEL, 0, 0);
-    if (idx == CB_ERR) {
-        MessageBox(NULL, TEXT("Please select a category."), TEXT("Selection Required"), MB_OK | MB_ICONWARNING);
-        return;
-    }
-
-    std::wstring roomCategory = getWindowText(adminAddRoom.category);
-
-    std::string roomName_utf8(roomName.begin(), roomName.end());
-    std::string roomFloor_utf8(roomFloor.begin(), roomFloor.end());
-    std::string roomCategory_utf8(roomCategory.begin(), roomCategory.end());
-
-    try {
-        auto sqliteHandler = SQLiteHandler::getInstance("courseScheduleDB.sqlite");
-
-        if (sqliteHandler->insertRoom(roomName_utf8, roomFloor_utf8, roomCategory_utf8)) {
-            MessageBox(hWnd, TEXT("Room inserted successfully!"), TEXT("Success"), MB_OK | MB_ICONINFORMATION);
-        }
-        else {
-            MessageBox(NULL, TEXT("Failed to insert data."), TEXT("Error"), MB_OK | MB_ICONERROR);
-        }
-    }
-    catch (const std::runtime_error& e) {
-        std::wstring errorMessage = L"Error: " + std::wstring(e.what(), e.what() + strlen(e.what()));
-        MessageBox(hWnd, errorMessage.c_str(), TEXT("Database Error"), MB_OK | MB_ICONERROR);
-    }
 }
 
 // Teacher Windows

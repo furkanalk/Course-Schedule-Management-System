@@ -92,11 +92,11 @@ void Admin::showInterface(HWND hWnd) {
 }
 
 void User::addData(HWND hWnd) {
-	// Will be filled with admin data
+	// Will be filled with user data
 }
 
 void User::insertToDB(HWND hWnd) {
-	// Will be filled with admin data
+	// Will be filled with user data
 }
 
 void CourseManagement::setRooms(size_t index, std::vector<std::string> newRooms) {
@@ -113,6 +113,13 @@ std::vector<std::vector<std::string>> CourseManagement::getRooms() {
 	return rooms;
 }
 
+void CourseManagement::clear() {
+	ids.clear();
+	names.clear();
+	rooms.clear();
+}
+
+// Update course
 bool CourseManagement::updateCourse(HWND hWnd, HWND hCourseComboBox) {
 	LRESULT selectedIndex = SendMessage(hCourseComboBox, CB_GETCURSEL, 0, 0);
 	if (selectedIndex == CB_ERR) {
@@ -160,7 +167,7 @@ bool CourseManagement::updateCourse(HWND hWnd, HWND hCourseComboBox) {
 		std::vector<std::string> roomNames = { firstRoomName_utf8, secondRoomName_utf8 };
 		updatedCourses.setRooms(courseIndex, roomNames);
 
-		bool result = dbHandler->updateCourse(updatedCourses);
+		bool result = dbHandler->update(updatedCourses);
 		if (!result) {
 			MessageBox(hWnd, L"The update operation failed.", L"Update Failed", MB_ICONERROR | MB_OK);
 			return false;
@@ -184,6 +191,7 @@ bool CourseManagement::updateCourse(HWND hWnd, HWND hCourseComboBox) {
 	return false;
 }
 
+// Delete course
 bool CourseManagement::removeCourse(HWND hWnd, HWND hComboBox) {
 	LRESULT selectedIndex = SendMessage(hComboBox, CB_GETCURSEL, 0, 0);
 	if (selectedIndex == CB_ERR) {
@@ -202,7 +210,7 @@ bool CourseManagement::removeCourse(HWND hWnd, HWND hComboBox) {
 
 	updatedCourses.setCurrentId(courseId);
 
-	if (!dbHandler->deleteCourse(updatedCourses)) {
+	if (!dbHandler->deleteData(updatedCourses)) {
 		MessageBox(hWnd, L"Failed to delete the course.", L"Deletion Error", MB_ICONERROR | MB_OK);
 		return false;
 	}
@@ -285,23 +293,83 @@ void CourseManagement::addData(HWND hWnd) {
 /* Admin insert course to DB */
 void CourseManagement::insertToDB(HWND hWnd) {
 	WindowHandler* wh = WindowHandler::getInstance();
+	std::wstring courseName = wh->getWindowText(GetDlgItem(hWnd, 153));
 
-	// Add course to DB
-	wh->insertCourseIntoDatabase(hWnd);
+	if (courseName.empty()) {
+		MessageBox(NULL, TEXT("Course name cannot be empty!"), TEXT("Name Required"), MB_OK | MB_ICONERROR);
+		return;
+	}
+
+	int itemCount = SendMessage(GetDlgItem(hWnd, 150), LB_GETCOUNT, 0, 0);
+	if (itemCount == LB_ERR) {
+		MessageBox(NULL, TEXT("Error getting item count from list."), TEXT("Invalid List"), MB_OK | MB_ICONERROR);
+		return;
+	}
+
+	std::vector<std::wstring> selectedRoomNames;
+	for (int i = 0; i < itemCount; ++i) {
+		if (SendMessage(GetDlgItem(hWnd, 150), LB_GETSEL, i, 0) > 0) {
+			int len = SendMessage(GetDlgItem(hWnd, 150), LB_GETTEXTLEN, i, 0);
+			std::wstring itemText(len + 1, L'\0');
+			SendMessage(GetDlgItem(hWnd, 150), LB_GETTEXT, i, (LPARAM)itemText.data());
+			int pos = itemText.find(L" - ");
+			selectedRoomNames.push_back(pos != std::wstring::npos ? itemText.substr(0, pos) : L"");
+		}
+	}
+
+	if (selectedRoomNames.empty()) {
+		MessageBox(NULL, TEXT("Please select at least one class."), TEXT("Selection Required"), MB_OK | MB_ICONERROR);
+		return;
+	}
+	if (selectedRoomNames.size() > 2) {
+		MessageBox(NULL, TEXT("Please select no more than two classes."), TEXT("Selection Limit"), MB_OK | MB_ICONERROR);
+		return;
+	}
+
+	std::string courseName_utf8(courseName.begin(), courseName.end());
+	std::vector<std::string> selectedRoomsUtf8;
+	for (const auto& roomName : selectedRoomNames) {
+		selectedRoomsUtf8.push_back(std::string(roomName.begin(), roomName.end()));
+	}
+
+	CourseManagement courseData;
+	courseData.addName(courseName_utf8);
+	courseData.addRooms(selectedRoomsUtf8);
+
+	try {
+		auto sqliteHandler = SQLiteHandler::getInstance("courseScheduleDB.sqlite");
+
+		if (sqliteHandler->insert(courseData)) {
+			MessageBox(hWnd, TEXT("Course inserted successfully!"), TEXT("Success"), MB_OK | MB_ICONINFORMATION);
+		}
+		else {
+			MessageBox(NULL, TEXT("Failed to insert data."), TEXT("Error"), MB_OK | MB_ICONERROR);
+		}
+	}
+	catch (const std::runtime_error& e) {
+		std::wstring errorMessage = L"Error: " + std::wstring(e.what(), e.what() + strlen(e.what()));
+		MessageBox(hWnd, errorMessage.c_str(), TEXT("Database Error"), MB_OK | MB_ICONERROR);
+	}
 }
 
-void TeacherManagement::setWorkdays(size_t index, std::vector<bool> isWorkday) {
+void TeacherManagement::setWorkdays(size_t index, std::vector<int> isWorkday) {
 	if (index < workdays.size()) {
 		workdays[index] = isWorkday;
 	}
 }
 
-void TeacherManagement::addWorkdays(std::vector<bool> weeklyWorkdays) {
+void TeacherManagement::addWorkdays(std::vector<int> weeklyWorkdays) {
 	workdays.push_back(weeklyWorkdays);
 }
 
-std::vector<std::vector<bool>> TeacherManagement::getWorkdays() {
+std::vector<std::vector<int>> TeacherManagement::getWorkdays() {
 	return workdays;
+}
+
+void TeacherManagement::clear() {
+	ids.clear();
+	names.clear();
+	workdays.clear();
 }
 
 /* Admin teacher management Wnd */
@@ -350,10 +418,57 @@ void TeacherManagement::addData(HWND hWnd) {
 
 /* Admin insert teacher into DB */
 void TeacherManagement::insertToDB(HWND hWnd) {
-	WindowHandler* wh = WindowHandler::getInstance();
+	WindowHandler* wh = WindowHandler::getInstance(); 
+	std::wstring fullname = wh->getWindowText(GetDlgItem(hWnd, 149));
+	std::wstring course = wh->getWindowText(GetDlgItem(hWnd, 140));
 
-	// Add teacher into DB
-	wh->insertTeacherIntoDatabase(hWnd);
+	if (fullname.empty() || course.empty()) {
+		MessageBox(NULL, TEXT("Full name and course cannot be empty!"), TEXT("Input Required"), MB_OK | MB_ICONERROR);
+		return;
+	}
+
+	std::vector<HWND> workdays = {
+		GetDlgItem(hWnd, 143), GetDlgItem(hWnd, 144), GetDlgItem(hWnd, 145),
+		GetDlgItem(hWnd, 146), GetDlgItem(hWnd, 147), GetDlgItem(hWnd, 148)
+	};
+
+	bool workdaySelected = std::any_of(workdays.begin(), workdays.end(), [hWnd](HWND checkboxHwnd) {
+		return SendMessage(checkboxHwnd, BM_GETCHECK, 0, 0) == BST_CHECKED;
+		});
+
+	if (!workdaySelected) {
+		MessageBox(NULL, TEXT("At least one workday must be selected!"), TEXT("Selection Required"), MB_OK | MB_ICONERROR);
+		return;
+	}
+
+	std::string fullname_utf8(fullname.begin(), fullname.end());
+	std::string course_utf8(course.begin(), course.end());
+
+	std::vector<int> workdayValues;
+	for (HWND checkboxHwnd : workdays) {
+		int value = SendMessage(checkboxHwnd, BM_GETCHECK, 0, 0) == BST_CHECKED;
+		workdayValues.push_back(value);
+	}
+
+	TeacherManagement teacherData;
+	teacherData.addName(fullname_utf8);
+	teacherData.addName(course_utf8);
+	teacherData.addWorkdays(workdayValues);
+
+	try {
+		auto sqliteHandler = SQLiteHandler::getInstance("courseScheduleDB.sqlite");
+
+		if (sqliteHandler->insert(teacherData)) {
+			MessageBox(NULL, TEXT("Data inserted successfully!"), TEXT("Success"), MB_OK | MB_ICONINFORMATION);
+		}
+		else {
+			MessageBox(NULL, TEXT("Failed to insert data."), TEXT("Error"), MB_OK | MB_ICONERROR);
+		}
+	}
+	catch (const std::runtime_error& e) {
+		std::wstring errorMessage = L"Error: " + std::wstring(e.what(), e.what() + strlen(e.what()));
+		MessageBox(hWnd, errorMessage.c_str(), TEXT("Database Error"), MB_OK | MB_ICONERROR);
+	}
 }
 
 /* Update teacher */
@@ -381,17 +496,17 @@ bool TeacherManagement::updateTeacher(HWND hWnd, HWND hComboBox) {
 	HWND hFriday = GetDlgItem(hWnd, 198);
 	HWND hSaturday = GetDlgItem(hWnd, 199);
 
-	std::vector<bool> newWorkdays;
+	std::vector<int> newWorkdays;
 	std::vector<HWND> weekdayCombos = { hMonday, hTuesday, hWednesday, hThursday, hFriday, hSaturday };
 
 	for (HWND hCombo : weekdayCombos) {
 		LRESULT selected = SendMessage(hCombo, CB_GETCURSEL, 0, 0);
-		bool isWorking;
+		int isWorking;
 
 		if (selected == 0)
-			isWorking = true;
+			isWorking = 1;
 		else
-			isWorking = false;
+			isWorking = 0;
 
 		newWorkdays.push_back(isWorking);
 	}
@@ -416,7 +531,7 @@ bool TeacherManagement::updateTeacher(HWND hWnd, HWND hComboBox) {
 		allTeachers.setName(teacherIndex, teacherName_utf8);
 		allTeachers.setWorkdays(teacherIndex, newWorkdays);
 
-		if (!dbHandler->updateTeacher(allTeachers)) {
+		if (!dbHandler->update(allTeachers)) {
 			MessageBox(hWnd, L"The update operation failed.", L"Update Error", MB_ICONERROR | MB_OK);
 			return false;
 		}
@@ -456,8 +571,9 @@ bool TeacherManagement::removeTeacher(HWND hWnd, HWND hComboBox) {
 
 	SQLiteHandler* dbHandler = SQLiteHandler::getInstance("courseScheduleDB.sqlite");
 	TeacherManagement updatedTeachers = dbHandler->getTeachers();
+	updatedTeachers.currentId = teacherId;
 
-	if (!dbHandler->deleteTeacher(updatedTeachers)) {
+	if (!dbHandler->deleteData(updatedTeachers)) {
 		MessageBox(hWnd, L"Failed to delete the teacher.", L"Deletion Error", MB_ICONERROR | MB_OK);
 		return false;
 	}
@@ -515,6 +631,13 @@ std::vector<std::string> RoomManagement::getCategories() {
 	return categories;
 }
 
+void RoomManagement::clear() {
+	ids.clear();
+	names.clear();
+	floors.clear();
+	categories.clear();
+}
+
 /* Admin room management Wnd */
 void RoomManagement::showInterface(HWND hWnd) {
 	WindowHandler* wh = WindowHandler::getInstance();
@@ -561,10 +684,37 @@ void RoomManagement::addData(HWND hWnd) {
 
 /* Admin insert classroom into DB */
 void RoomManagement::insertToDB(HWND hWnd) {
-	WindowHandler* wh = WindowHandler::getInstance();
+    WindowHandler* wh = WindowHandler::getInstance();
+    std::wstring roomName = wh->getWindowText(GetDlgItem(hWnd, 173));
+    std::wstring roomFloor = wh->getWindowText(GetDlgItem(hWnd, 174));
+    std::wstring roomCategory = wh->getComboBoxSelectedText(GetDlgItem(hWnd, 170));
 
-	// Add room into DB
-	wh->insertRoomIntoDatabase(hWnd);
+    if (roomName.empty() || roomFloor.empty() || roomCategory.empty()) {
+        MessageBox(NULL, TEXT("Room Name, floor, and category cannot be empty!"), TEXT("Input Required"), MB_OK | MB_ICONWARNING);
+        return;
+    }
+
+    std::string roomName_utf8(roomName.begin(), roomName.end());
+    std::string roomFloor_utf8(roomFloor.begin(), roomFloor.end());
+    std::string roomCategory_utf8(roomCategory.begin(), roomCategory.end());
+
+	RoomManagement roomData;
+    roomData.addName(roomName_utf8);
+    roomData.addFloor(roomFloor_utf8);
+    roomData.addCategory(roomCategory_utf8);
+
+    try {
+        auto sqliteHandler = SQLiteHandler::getInstance("courseScheduleDB.sqlite");
+
+        if (sqliteHandler->insert(roomData)) {
+            MessageBox(hWnd, TEXT("Room inserted successfully!"), TEXT("Success"), MB_OK | MB_ICONINFORMATION);
+        } else {
+            MessageBox(NULL, TEXT("Failed to insert data."), TEXT("Error"), MB_OK | MB_ICONERROR);
+        }
+    } catch (const std::runtime_error& e) {
+        std::wstring errorMessage = L"Error: " + std::wstring(e.what(), e.what() + strlen(e.what()));
+        MessageBox(hWnd, errorMessage.c_str(), TEXT("Database Error"), MB_OK | MB_ICONERROR);
+    }
 }
 
 /* Update room */
@@ -613,7 +763,7 @@ bool RoomManagement::updateRoom(HWND hWnd, HWND hComboBox) {
 		updatedClassrooms.setFloor(roomIndex, roomFloor_utf8);
 		updatedClassrooms.setCategory(roomIndex, roomCategory_utf8);
 
-		bool result = dbHandler->updateRoom(updatedClassrooms);
+		bool result = dbHandler->update(updatedClassrooms);
 		if (!result) {
 			MessageBox(hWnd, L"The update operation returned false.", L"Update Failed", MB_OK);
 			return false;
@@ -656,7 +806,7 @@ bool RoomManagement::removeRoom(HWND hWnd, HWND hComboBox) {
 
 	updatedClassrooms.setCurrentId(roomId);
 
-	if (!dbHandler->deleteRoom(updatedClassrooms)) {
+	if (!dbHandler->deleteData(updatedClassrooms)) {
 		MessageBox(hWnd, L"Failed to delete the classroom.", L"Deletion Error", MB_ICONERROR | MB_OK);
 		return false;
 	}

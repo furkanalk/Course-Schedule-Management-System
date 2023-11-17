@@ -1,4 +1,3 @@
-// https://qiwi.gg/file/akpz8771-Debug
 #include "framework.h"
 #include "course.h"
 #include "SQLiteHandler.h"
@@ -23,9 +22,9 @@ LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
-                     _In_opt_ HINSTANCE hPrevInstance,
-                     _In_ LPWSTR    lpCmdLine,
-                     _In_ int       nCmdShow)
+    _In_opt_ HINSTANCE hPrevInstance,
+    _In_ LPWSTR    lpCmdLine,
+    _In_ int       nCmdShow)
 {
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
@@ -36,7 +35,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     MyRegisterClass(hInstance);
 
     // Perform application initialization:
-    if (!InitInstance (hInstance, nCmdShow))
+    if (!InitInstance(hInstance, nCmdShow))
     {
         return FALSE;
     }
@@ -55,7 +54,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
     }
 
-    return (int) msg.wParam;
+    return (int)msg.wParam;
 }
 
 //  PURPOSE: Registers the window class.
@@ -65,17 +64,17 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 
     wcex.cbSize = sizeof(WNDCLASSEX);
 
-    wcex.style          = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc    = WndProc;
-    wcex.cbClsExtra     = 0;
-    wcex.cbWndExtra     = 0;
-    wcex.hInstance      = hInstance;
-    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_COURSESCHEDULE));
-    wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
-    wcex.hbrBackground  = CreateSolidBrush(RGB(200, 200, 255));
-    wcex.lpszMenuName   = NULL;
-    wcex.lpszClassName  = szWindowClass;
-    wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+    wcex.style = CS_HREDRAW | CS_VREDRAW;
+    wcex.lpfnWndProc = WndProc;
+    wcex.cbClsExtra = 0;
+    wcex.cbWndExtra = 0;
+    wcex.hInstance = hInstance;
+    wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_COURSESCHEDULE));
+    wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+    wcex.hbrBackground = CreateSolidBrush(RGB(200, 200, 255));
+    wcex.lpszMenuName = NULL;
+    wcex.lpszClassName = szWindowClass;
+    wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
     return RegisterClassExW(&wcex);
 }
@@ -84,22 +83,22 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 
 /* Login Types */
 void HandleLoginTypes(int wmID, HWND hWnd, User& userAdmin, User& userTeacher, User& userStudent) {
-    switch (wmID) { 
-        case 501:
-            userAdmin.login(hWnd);
-            break;
-        case 502:
-            userTeacher.showInterface(hWnd);
-            break;
-        case 503:
-            userStudent.showInterface(hWnd);
-            break;
+    switch (wmID) {
+    case 501:
+        userAdmin.login(hWnd);
+        break;
+    case 502:
+        userTeacher.showInterface(hWnd);
+        break;
+    case 503:
+        userStudent.showInterface(hWnd);
+        break;
     }
 }
 
 /* Admin Windows */
 void HandleAdminLogin(int wmId, HWND hWnd, User& userAdmin, User& userTeacher, User& userStudent, User& user) {
-    
+
     //static std::unique_ptr<User> gradeMngt = std::make_unique<GradeManagement>();
     static std::unique_ptr<User> roomMngt = std::make_unique<RoomManagement>();
     static std::unique_ptr<User> courseMngt = std::make_unique<CourseManagement>();
@@ -184,7 +183,7 @@ void HandleAdminLogin(int wmId, HWND hWnd, User& userAdmin, User& userTeacher, U
         // back to Login Types from Teacher Management (exit)
         user.showInterface(hWnd);
         break;
-    
+
         /* Teacher Manage Teachers */
     case 201:
         // back to Teacher Management from Manage Teachers
@@ -234,29 +233,29 @@ void HandleAdminLogin(int wmId, HWND hWnd, User& userAdmin, User& userTeacher, U
         // insert a new classroom to Database (insert)
         roomMngt->insertToDB(hWnd);
         break;
-    //case 172:
-    //    // back to Login Types from Room Management (exit)
-    //    user.showInterface(hWnd);
-    //    break;  
+        //case 172:
+        //    // back to Login Types from Room Management (exit)
+        //    user.showInterface(hWnd);
+        //    break;  
     }
 }
 
 void HandleTeacherLogin(int wmId, HWND hWnd, User& user) {
     switch (wmId) {
         // back to Login Types from Teacher Login (back)
-        case 301:
-            user.showInterface(hWnd);
-            break;
+    case 301:
+        user.showInterface(hWnd);
+        break;
     }
 }
 
 void HandleStudentLogin(int wmId, HWND hWnd, User& user) {
     switch (wmId) {
         // back to Login Types from Student Login (back)
-        case 401:
-            user.showInterface(hWnd);
-            break;
-        }
+    case 401:
+        user.showInterface(hWnd);
+        break;
+    }
 }
 
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
@@ -289,7 +288,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     static HBRUSH hbrBkgnd = CreateSolidBrush(RGB(200, 200, 255));
-  
+
     static std::unique_ptr<User> user = std::make_unique<User>();
     static std::unique_ptr<RoomManagement> roomMngmt = std::make_unique<RoomManagement>();
     static std::unique_ptr<TeacherManagement> teacherMngmt = std::make_unique<TeacherManagement>();
@@ -318,7 +317,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         int wmId = LOWORD(wParam);
         int wmEvent = HIWORD(wParam);
 
-        HWND hComboBox = GetDlgItem(hWnd, 180);
+        HWND hRoomComboBox = GetDlgItem(hWnd, 180);
         HWND hTeacherComboBox = GetDlgItem(hWnd, 190);
         HWND hCourseComboBox = GetDlgItem(hWnd, 210);
 
@@ -432,7 +431,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         // Classroom fetch
         if (wmId == 181) {
             try {
-                int idx = (int)SendMessage(hComboBox, CB_GETCURSEL, 0, 0);
+                int idx = (int)SendMessage(hRoomComboBox, CB_GETCURSEL, 0, 0);
                 if (idx == CB_ERR) {
                     MessageBox(hWnd, L"Please make a selection.", L"Selection Error", MB_ICONWARNING | MB_OK);
                     break;
@@ -465,10 +464,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
 
         if (wmId == 183) { // Update classroom
-            if (!roomMngmt->updateRoom(hWnd, hComboBox)) { return 0; }
+            if (!roomMngmt->updateRoom(hWnd, hRoomComboBox)) { return 0; }
         }
         if (wmId == 182) { // Delete classroom
-            if (!roomMngmt->removeRoom(hWnd, hComboBox)) { return 0; }
+            if (!roomMngmt->removeRoom(hWnd, hRoomComboBox)) { return 0; }
         }
 
         if (wmId == IDM_EXIT)
@@ -490,21 +489,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         if (wmId >= 400 && wmId < 500)
             HandleStudentLogin(wmId, hWnd, *user);
 
-        return DefWindowProc(hWnd, message, wParam, lParam);    
-    }
-
-    case WM_SHOWWINDOW:
-    {
-        HWND hComboBox = GetDlgItem(hWnd, 180);
-        if (wParam == TRUE) { // Pencere gösteriliyor
-            OutputDebugString(L"WM_SHOWWINDOW: Pencere gösteriliyor, ComboBox yenileniyor.\n");
-            // ComboBox'ý sýfýrla (Eðer bu adýmý yapmak isterseniz)
-            SendMessage(hComboBox, CB_RESETCONTENT, 0, 0);
-        }
-        else {
-            OutputDebugString(L"WM_SHOWWINDOW: Pencere gizleniyor.\n");
-        }
-        break;
+        return DefWindowProc(hWnd, message, wParam, lParam);
     }
 
     case WM_DESTROY:

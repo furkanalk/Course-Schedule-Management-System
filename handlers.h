@@ -80,7 +80,7 @@ class WindowHandler {
         HWND update;
 
         // Set all windows to NULL by default
-        AdminManageCourse() : header(nullptr), courseList(nullptr), fetch(nullptr), deleteCourse(nullptr), courseName(nullptr), courseRoomFirst(nullptr), courseRoomSecond(nullptr), 
+        AdminManageCourse() : header(nullptr), courseList(nullptr), fetch(nullptr), deleteCourse(nullptr), courseName(nullptr), courseRoomFirst(nullptr), courseRoomSecond(nullptr),
             courseRoomF(nullptr), courseRoomS(nullptr), previous(nullptr), update(nullptr) {}
     } adminManageCourse;
 
@@ -133,7 +133,7 @@ class WindowHandler {
         HWND update;
 
         // Set all windows to NULL by default
-        AdminManageTeacher() : header(nullptr), teacherList(nullptr), fetch(nullptr), deleteTeacher(nullptr), teacherName(nullptr), mondayStatic(nullptr), mondayBool(nullptr), 
+        AdminManageTeacher() : header(nullptr), teacherList(nullptr), fetch(nullptr), deleteTeacher(nullptr), teacherName(nullptr), mondayStatic(nullptr), mondayBool(nullptr),
             tuesdayStatic(nullptr), tuesdayBool(nullptr), wednesdayStatic(nullptr), wednesdayBool(nullptr), thursdayStatic(nullptr), thursdayBool(nullptr), fridayStatic(nullptr), fridayBool(nullptr),
             saturdayStatic(nullptr), saturdayBool(nullptr), previous(nullptr), update(nullptr) {}
     } adminManageTeacher;
@@ -156,7 +156,7 @@ class WindowHandler {
         HWND insert;
 
         // Set all windows to NULL by default
-        AdminAddTeacher() : header(nullptr), fullname(nullptr), fullnameInput(nullptr), course(nullptr) , courseInput(nullptr), headerSecond(nullptr), monday(nullptr), tuesday(nullptr),
+        AdminAddTeacher() : header(nullptr), fullname(nullptr), fullnameInput(nullptr), course(nullptr), courseInput(nullptr), headerSecond(nullptr), monday(nullptr), tuesday(nullptr),
             wednesday(nullptr), thursday(nullptr), friday(nullptr), saturday(nullptr), previous(nullptr), insert(nullptr) {}
     } adminAddTeacher;
 
@@ -274,7 +274,6 @@ public:
     // Admin Add Course
     void createAdminAddCourseWindows(HWND hWnd);
     void setAdminAddCourseVisibility(bool isVisible);
-    void insertCourseIntoDatabase(HWND hWnd);
 
     // Admin Teacher Management
     void createAdminTeacherManagementWindows(HWND hWnd);
@@ -287,7 +286,6 @@ public:
     // Admin Add Teacher
     void createAdminAddTeacherWindows(HWND hWnd);
     void setAdminAddTeacherVisibility(bool isVisible);
-    void insertTeacherIntoDatabase(HWND hWnd);
 
     // Admin Room Management
     void createAdminRoomManagementWindows(HWND hWnd);
@@ -300,7 +298,6 @@ public:
     // Admin Add Room
     void createAdminAddRoomWindows(HWND hWnd);
     void setAdminAddRoomVisibility(bool isVisible);
-    void insertRoomIntoDatabase(HWND hWnd);
 
     // Teacher Login
     void createTeacherLoginWindows(HWND hWnd);

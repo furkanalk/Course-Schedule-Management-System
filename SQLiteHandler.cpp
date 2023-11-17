@@ -26,11 +26,10 @@ SQLiteHandler* SQLiteHandler::getInstance(const std::string databaseName) {
 }
 
 // Insert Teacher into DB
-bool SQLiteHandler::insertTeacher(const std::string fullname, const std::string course,
-    int monday, int tuesday, int wednesday, int thursday, int friday, int saturday) {
+bool SQLiteHandler::insert(TeacherManagement& teacherData) {
     const std::string sqlQuery = "INSERT INTO teacher (fullname, course, monday, tuesday, wednesday, thursday, friday, saturday) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
-
     sqlite3_stmt* stmt_raw = nullptr;
+
     if (sqlite3_prepare_v2(db, sqlQuery.c_str(), -1, &stmt_raw, nullptr) != SQLITE_OK) {
         std::string errMsg = "Failed to prepare the SQL statement: " + std::string(sqlite3_errmsg(db));
         sqlite3_finalize(stmt_raw);
@@ -39,37 +38,38 @@ bool SQLiteHandler::insertTeacher(const std::string fullname, const std::string 
 
     std::unique_ptr<sqlite3_stmt, decltype(&sqlite3_finalize)> stmt(stmt_raw, sqlite3_finalize);
 
-    if (sqlite3_bind_text(stmt.get(), 1, fullname.c_str(), -1, SQLITE_STATIC) != SQLITE_OK)
-        throw std::runtime_error("Failed to bind parameter: fullname");
-    
-    if (sqlite3_bind_text(stmt.get(), 2, course.c_str(), -1, SQLITE_STATIC) != SQLITE_OK)
-        throw std::runtime_error("Failed to bind parameter: course");
-    
-    if (sqlite3_bind_int(stmt.get(), 3, monday) != SQLITE_OK)
-        throw std::runtime_error("Failed to bind parameter: monday");
-   
-    if (sqlite3_bind_int(stmt.get(), 4, tuesday) != SQLITE_OK)
-        throw std::runtime_error("Failed to bind parameter: tuesday");
-    
-    if (sqlite3_bind_int(stmt.get(), 5, wednesday) != SQLITE_OK)
-        throw std::runtime_error("Failed to bind parameter: wednesday");
-    
-    if (sqlite3_bind_int(stmt.get(), 6, thursday) != SQLITE_OK)
-        throw std::runtime_error("Failed to bind parameter: thursday");
-    
-    if (sqlite3_bind_int(stmt.get(), 7, friday) != SQLITE_OK)
-        throw std::runtime_error("Failed to bind parameter: friday");
+    std::string fullname = teacherData.getNames()[0];
+    std::string course = teacherData.getNames()[1];
 
-    if (sqlite3_bind_int(stmt.get(), 8, saturday) != SQLITE_OK)
-        throw std::runtime_error("Failed to bind parameter: saturday");
- 
+    if (!teacherData.getNames().empty()) {
+        if (sqlite3_bind_text(stmt.get(), 1, fullname.c_str(), -1, SQLITE_STATIC) != SQLITE_OK)
+            throw std::runtime_error("Failed to bind parameter: fullname");
+        if (teacherData.getNames().size() > 1 && sqlite3_bind_text(stmt.get(), 2, course.c_str(), -1, SQLITE_STATIC) != SQLITE_OK)
+            throw std::runtime_error("Failed to bind parameter: course");
+    }
+
+    if (teacherData.getWorkdays().empty()) {
+        throw std::runtime_error("No workdays selected");
+        return false;
+    }
+
+    auto workdays = teacherData.getWorkdays()[0];
+
+    for (size_t i = 0; i < workdays.size(); ++i) {
+        if (sqlite3_bind_int(stmt.get(), i + 3, workdays[i]) != SQLITE_OK) {
+            std::string error = "Failed to bind workday parameter for index " + std::to_string(i + 3);
+            throw std::runtime_error(error);
+            return false;
+        }
+    }
+
     if (sqlite3_step(stmt.get()) != SQLITE_DONE)
         throw std::runtime_error("Failed to execute the SQL statement: " + std::string(sqlite3_errmsg(db)));
 
     return true;
 }
 
-bool SQLiteHandler::updateTeacher(TeacherManagement& updatedTeachers) {
+bool SQLiteHandler::update(TeacherManagement& updatedTeachers) {
     const std::string sqlUpdateTeacher = "UPDATE teacher SET fullname = ?, monday = ?, tuesday = ?, wednesday = ?, thursday = ?, friday = ?, saturday = ? WHERE id = ?;";
     sqlite3_stmt* stmt_raw = nullptr;
 
@@ -107,7 +107,7 @@ bool SQLiteHandler::updateTeacher(TeacherManagement& updatedTeachers) {
     return true;
 }
 
-bool SQLiteHandler::deleteTeacher(TeacherManagement& teachers) {
+bool SQLiteHandler::deleteData(TeacherManagement& teachers) {
     const std::string sqlDeleteTeacher = "DELETE FROM teacher WHERE id = ?;";
     sqlite3_stmt* stmt = nullptr;
 
@@ -132,7 +132,6 @@ bool SQLiteHandler::deleteTeacher(TeacherManagement& teachers) {
 }
 
 TeacherManagement SQLiteHandler::getTeachers() {
-    TeacherManagement teacherData;
     const std::string sqlQuery = "SELECT id, fullname, monday, tuesday, wednesday, thursday, friday, saturday FROM teacher;";
     sqlite3_stmt* stmt;
 
@@ -142,11 +141,12 @@ TeacherManagement SQLiteHandler::getTeachers() {
         throw std::runtime_error("Failed to execute statement: " + std::string(sqlite3_errmsg(db)));
     }
 
+    teacherData.clear();
     while ((result = sqlite3_step(stmt)) == SQLITE_ROW) {
         teacherData.addId(sqlite3_column_int(stmt, 0));
         teacherData.addName(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1))));
 
-        std::vector<bool> weeklyWorkdays;
+        std::vector<int> weeklyWorkdays;
         for (int dayIndex = 2; dayIndex <= 7; ++dayIndex) {
             weeklyWorkdays.push_back(sqlite3_column_int(stmt, dayIndex) > 0);
         }
@@ -162,7 +162,7 @@ TeacherManagement SQLiteHandler::getTeachers() {
 }
 
 // Insert Course into DB
-bool SQLiteHandler::insertCourse(const std::string courseName, const std::vector<std::string> roomNames) {
+bool SQLiteHandler::insert(CourseManagement& courseData) {
     const std::string sqlInsertCourse = "INSERT INTO course (name, firstRoom, secondRoom) VALUES (?, ?, ?);";
     sqlite3_stmt* stmt_raw = nullptr;
 
@@ -174,16 +174,20 @@ bool SQLiteHandler::insertCourse(const std::string courseName, const std::vector
 
     std::unique_ptr<sqlite3_stmt, decltype(&sqlite3_finalize)> stmt(stmt_raw, sqlite3_finalize);
 
-    if (sqlite3_bind_text(stmt.get(), 1, courseName.c_str(), -1, SQLITE_STATIC) != SQLITE_OK) {
+    std::string name = courseData.getNames()[0];
+    std::vector<std::string> rooms = courseData.getRooms()[0];
+    std::string roomFirst = rooms[0];
+    std::string roomSecond = rooms.size() > 1 ? rooms[1] : roomFirst;
+
+    if (sqlite3_bind_text(stmt.get(), 1, name.c_str(), -1, SQLITE_STATIC) != SQLITE_OK) {
         throw std::runtime_error("Failed to bind parameter: courseName");
     }
 
-    if (!roomNames.empty() && sqlite3_bind_text(stmt.get(), 2, roomNames[0].c_str(), -1, SQLITE_TRANSIENT) != SQLITE_OK) {
+    if (!roomFirst.empty() && sqlite3_bind_text(stmt.get(), 2, roomFirst.c_str(), -1, SQLITE_TRANSIENT) != SQLITE_OK) {
         throw std::runtime_error("Failed to bind parameter: firstRoom");
     }
 
-    std::string secondRoom = roomNames.size() > 1 ? roomNames[1] : roomNames[0];
-    if (sqlite3_bind_text(stmt.get(), 3, secondRoom.c_str(), -1, SQLITE_TRANSIENT) != SQLITE_OK) {
+    if (!roomSecond.empty() && sqlite3_bind_text(stmt.get(), 3, roomSecond.c_str(), -1, SQLITE_TRANSIENT) != SQLITE_OK) {
         throw std::runtime_error("Failed to bind parameter: secondRoom");
     }
 
@@ -194,7 +198,8 @@ bool SQLiteHandler::insertCourse(const std::string courseName, const std::vector
     return true;
 }
 
-bool SQLiteHandler::updateCourse(CourseManagement& updatedCourses) {
+// Update course
+bool SQLiteHandler::update(CourseManagement& updatedCourses) {
     const std::string sqlUpdateCourse = "UPDATE course SET name = ?, firstRoom = ?, secondRoom = ? WHERE id = ?;";
     sqlite3_stmt* stmt_raw = nullptr;
 
@@ -224,7 +229,8 @@ bool SQLiteHandler::updateCourse(CourseManagement& updatedCourses) {
     return true;
 }
 
-bool SQLiteHandler::deleteCourse(CourseManagement& courses) {
+// Delete course
+bool SQLiteHandler::deleteData(CourseManagement& courses) {
     const std::string sqlDeleteCourse = "DELETE FROM course WHERE id = ?;";
     sqlite3_stmt* stmt = nullptr;
 
@@ -253,7 +259,6 @@ bool SQLiteHandler::deleteCourse(CourseManagement& courses) {
 
 // Get Course from DB
 CourseManagement SQLiteHandler::getCourses() {
-    CourseManagement courseData;
     const std::string sqlQuery = "SELECT id, name, firstRoom, secondRoom FROM course;";
     sqlite3_stmt* stmt;
 
@@ -263,6 +268,7 @@ CourseManagement SQLiteHandler::getCourses() {
         throw std::runtime_error("Failed to execute statement: " + std::string(sqlite3_errmsg(db)));
     }
 
+    courseData.clear();
     while ((result = sqlite3_step(stmt)) == SQLITE_ROW) {
         courseData.addId(sqlite3_column_int(stmt, 0));
         courseData.addName(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1))));
@@ -284,10 +290,8 @@ CourseManagement SQLiteHandler::getCourses() {
     return courseData;
 }
 
-
 // Get Classsroom from DB
 RoomManagement SQLiteHandler::getClassrooms() {
-    RoomManagement classroomData;
     const std::string sqlQuery = "SELECT id, name, floor, category FROM classroom;";
     sqlite3_stmt* stmt;
 
@@ -297,6 +301,7 @@ RoomManagement SQLiteHandler::getClassrooms() {
         throw std::runtime_error("Failed to execute statement: " + std::string(sqlite3_errmsg(db)));
     }
 
+    classroomData.clear();
     while ((result = sqlite3_step(stmt)) == SQLITE_ROW) {
         classroomData.addId(sqlite3_column_int(stmt, 0));
         classroomData.addName(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1))));
@@ -313,7 +318,7 @@ RoomManagement SQLiteHandler::getClassrooms() {
 }
 
 // Insert Classroom into DB
-bool SQLiteHandler::insertRoom(const std::string name, const std::string floor, const std::string category) {
+bool SQLiteHandler::insert(RoomManagement& roomData) {
     const std::string sqlInsertRoom = "INSERT INTO classroom (name, floor, category) VALUES (?, ?, ?);";
     sqlite3_stmt* stmt_raw = nullptr;
 
@@ -324,6 +329,10 @@ bool SQLiteHandler::insertRoom(const std::string name, const std::string floor, 
     }
 
     std::unique_ptr<sqlite3_stmt, decltype(&sqlite3_finalize)> stmt(stmt_raw, sqlite3_finalize);
+
+    std::string name = roomData.getNames()[0];
+    std::string floor = roomData.getFloors()[0];
+    std::string category = roomData.getCategories()[0];
 
     if (sqlite3_bind_text(stmt.get(), 1, name.c_str(), -1, SQLITE_STATIC) != SQLITE_OK ||
         sqlite3_bind_text(stmt.get(), 2, floor.c_str(), -1, SQLITE_STATIC) != SQLITE_OK ||
@@ -338,7 +347,7 @@ bool SQLiteHandler::insertRoom(const std::string name, const std::string floor, 
 }
 
 // Update Classroom
-bool SQLiteHandler::updateRoom(RoomManagement& updatedClassrooms) {
+bool SQLiteHandler::update(RoomManagement& updatedClassrooms) {
     const std::string sqlUpdateRoom = "UPDATE classroom SET name = ?, floor = ?, category = ? WHERE id = ?;";
     sqlite3_stmt* stmt_raw = nullptr;
 
@@ -369,7 +378,7 @@ bool SQLiteHandler::updateRoom(RoomManagement& updatedClassrooms) {
 }
 
 // Delete Classroom
-bool SQLiteHandler::deleteRoom(RoomManagement& rooms) {
+bool SQLiteHandler::deleteData(RoomManagement& rooms) {
     const std::string sqlDeleteRoom = "DELETE FROM classroom WHERE id = ?;";
     sqlite3_stmt* stmt = nullptr;
 
