@@ -1,8 +1,7 @@
 ﻿#include "course.h"
 #include "handlers.h"
 #include "SQLiteHandler.h"
-#include <memory>
-#include <sstream>
+#include <algorithm>
 
 int User::getCurrentId() {
 	return currentId;
@@ -132,7 +131,7 @@ void CourseManagement::clear() {
 bool CourseManagement::updateCourse(HWND hWnd, HWND hCourseComboBox) {
 	LRESULT selectedIndex = SendMessage(hCourseComboBox, CB_GETCURSEL, 0, 0);
 	if (selectedIndex == CB_ERR) {
-		MessageBox(hWnd, L"No course selected.", L"Selection Error", MB_ICONWARNING | MB_OK);
+		MessageBox(hWnd, L"No course selected.", L"Error", MB_ICONWARNING | MB_OK);
 		return false;
 	}
 
@@ -425,9 +424,13 @@ void TeacherManagement::insertToDB(HWND hWnd) {
 		GetDlgItem(hWnd, 146), GetDlgItem(hWnd, 147), GetDlgItem(hWnd, 148)
 	};
 
-	bool workdaySelected = std::any_of(workdays.begin(), workdays.end(), [hWnd](HWND checkboxHwnd) {
-		return SendMessage(checkboxHwnd, BM_GETCHECK, 0, 0) == BST_CHECKED;
-		});
+	bool workdaySelected = false;
+	for (HWND checkboxHwnd : workdays) {
+		if (SendMessage(checkboxHwnd, BM_GETCHECK, 0, 0) == BST_CHECKED) {
+			workdaySelected = true;
+			break;
+		}
+	}
 
 	if (!workdaySelected) {
 		MessageBox(NULL, TEXT("At least one workday must be selected!"), TEXT("Error"), MB_OK | MB_ICONERROR);
@@ -672,7 +675,7 @@ void RoomManagement::insertToDB(HWND hWnd) {
     std::wstring roomCategory = wh->getComboBoxSelectedText(GetDlgItem(hWnd, 170));
 
     if (roomName.empty() || roomFloor.empty() || roomCategory.empty()) {
-        MessageBox(NULL, TEXT("Room Name, floor, and category cannot be empty!"), TEXT("Input Required"), MB_OK | MB_ICONWARNING);
+        MessageBox(NULL, TEXT("Room Name, floor, and category cannot be empty!"), TEXT("Error"), MB_OK | MB_ICONWARNING);
         return;
     }
 
@@ -740,7 +743,7 @@ bool RoomManagement::updateRoom(HWND hWnd, HWND hComboBox) {
 	updatedClassrooms->setCurrentIndex(roomIndex);
 
 	if (!dbHandler->update(*updatedClassrooms)) {
-		MessageBox(hWnd, L"The update operation returned false.", L"Update Failed", MB_OK);
+		MessageBox(hWnd, L"The update operation returned false.", L"Error", MB_OK);
 		return false;
 	}
 

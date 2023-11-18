@@ -6,7 +6,6 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <memory>
 
 class WindowHandler {
     static WindowHandler wh;

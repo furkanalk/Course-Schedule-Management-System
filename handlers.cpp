@@ -2,10 +2,6 @@
 #include "course.h"
 #include "SQLiteHandler.h"
 #include <tchar.h>
-#include <string>
-#include <vector>
-#include <algorithm>
-#include <sstream>
 
 WindowHandler WindowHandler::wh;
 
@@ -53,6 +49,7 @@ std::wstring WindowHandler::convertToWideString(std::string str) {
     return std::wstring(buffer.begin(), buffer.end() - 1);
 }
 
+// Get combobox text
 std::wstring WindowHandler::getComboBoxSelectedText(HWND comboBox) {
     int selectedIndex = SendMessage(comboBox, CB_GETCURSEL, 0, 0);
     if (selectedIndex < 0) return L"";
@@ -297,17 +294,8 @@ void WindowHandler::createAdminAddCourseWindows(HWND hWnd) {
 
     for (int i = 0; i < names.size(); i++) {
         std::wstring itemText = convertToWideString(names[i]) + L" - " + convertToWideString(floors[i]) + L" - " + convertToWideString(categories[i]);
-
         LRESULT index = SendMessage(adminAddCourse.classList, LB_ADDSTRING, 0, (LPARAM)itemText.c_str());
-
-        int roomId = ids[i];
-        if (roomId <= 0) {
-            MessageBox(hWnd, _T("Error retrieving id for list box item."), _T("Erro: ID is invalid"), MB_ICONERROR | MB_OK);
-            continue;
-        }
-        else {
-            SendMessage(adminAddCourse.classList, LB_SETITEMDATA, (WPARAM)index, (LPARAM)roomId);
-        }
+        SendMessage(adminAddCourse.classList, LB_SETITEMDATA, (WPARAM)index, (LPARAM)ids[i]);
     }
 
     adminAddCourse.previous = CreateWindow(TEXT("button"), TEXT("Back"), WS_BORDER | WS_CHILD, 300, 480, 80, 30, hWnd, (HMENU)151, NULL, NULL);

@@ -4,9 +4,7 @@
 #include "sqlite3.h"
 #include "course.h"
 #include <string>
-#include <stdexcept>
 #include <vector>
-#include <memory>
 
 class SQLiteHandler {
 private:
