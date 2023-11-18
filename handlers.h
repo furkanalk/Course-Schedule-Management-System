@@ -216,64 +216,63 @@ public:
     bool isWindowCreated(std::string windowName);
 
     std::wstring getComboBoxSelectedText(HWND comboBox);
-    void displayError(std::wstring message, HWND hWnd);
     std::wstring getWindowText(HWND hWnd);
 
     // Login Type
     void createLoginTypeWindows(HWND hWnd);
-    void setLoginTypeVisibility(bool isVisible);
+    void setLoginTypeVisible(bool isVisible = true);
 
     // Admin Login
     void createAdminLoginWindows(HWND hWnd);
-    void setAdminLoginVisibility(bool isVisible);
+    void setAdminLoginVisible(bool isVisible = true);
 
     // Admin Interface
     void createAdminInterfaceWindows(HWND hWnd);
-    void setAdminInterfaceVisibility(bool isVisible);
+    void setAdminInterfaceVisible(bool isVisible = true);
 
     // Admin Course Management
     void createAdminCourseManagementWindows(HWND hWnd);
-    void setAdminCourseManagementVisibility(bool isVisible);
+    void setAdminCourseManagementVisible(bool isVisible = true);
 
     // Admin Manage Course
     void createAdminManageCourseWindows(HWND hWnd);
-    void setAdminManageCourseVisibility(bool isVisible);
+    void setAdminManageCourseVisible(bool isVisible = true);
 
     // Admin Add Course
     void createAdminAddCourseWindows(HWND hWnd);
-    void setAdminAddCourseVisibility(bool isVisible);
+    void setAdminAddCourseVisible(bool isVisible = true);
 
     // Admin Teacher Management
     void createAdminTeacherManagementWindows(HWND hWnd);
-    void setAdminTeacherManagementVisibility(bool isVisible);
+    void setAdminTeacherManagementVisible(bool isVisible = true);
 
     // Admin Manage Teacher
     void createAdminManageTeacherWindows(HWND hWnd);
-    void setAdminManageTeacherVisibility(bool isVisible);
+    void setAdminManageTeacherVisible(bool isVisible = true);
 
     // Admin Add Teacher
     void createAdminAddTeacherWindows(HWND hWnd);
-    void setAdminAddTeacherVisibility(bool isVisible);
+    void setAdminAddTeacherVisible(bool isVisible = true);
 
     // Admin Room Management
     void createAdminRoomManagementWindows(HWND hWnd);
-    void setAdminRoomManagementVisibility(bool isVisible);
+    void setAdminRoomManagementVisible(bool isVisible = true);
 
     // Admin Manage Room
     void createAdminManageRoomWindows(HWND hWnd);
-    void setAdminManageRoomVisibility(bool isVisible);
+    void setAdminManageRoomVisible(bool isVisible = true);
 
     // Admin Add Room
     void createAdminAddRoomWindows(HWND hWnd);
-    void setAdminAddRoomVisibility(bool isVisible);
+    void setAdminAddRoomVisible(bool isVisible = true);
 
     // Teacher Login
     void createTeacherLoginWindows(HWND hWnd);
-    void setTeacherLoginVisibility(bool isVisible);
+    void setTeacherLoginVisible(bool isVisible = true);
 
     // Student Login
     void createStudentLoginWindows(HWND hWnd);
-    void setStudentLoginVisibility(bool isVisible);
+    void setStudentLoginVisible(bool isVisible = true);
 };
 
 #endif

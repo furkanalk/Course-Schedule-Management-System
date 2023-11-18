@@ -48,19 +48,19 @@ void User::showInterface(HWND hWnd) {
 
 	/* Hide other windows */
 	// Login Types
-	wh->setAdminLoginVisibility(false);
-	wh->setTeacherLoginVisibility(false);
-	wh->setStudentLoginVisibility(false);
+	wh->setAdminLoginVisible(false);
+	wh->setTeacherLoginVisible(false);
+	wh->setStudentLoginVisible(false);
 	// Admin
-	wh->setAdminInterfaceVisibility(false);
-	wh->setAdminCourseManagementVisibility(false);
-	wh->setAdminTeacherManagementVisibility(false);
+	wh->setAdminInterfaceVisible(false);
+	wh->setAdminCourseManagementVisible(false);
+	wh->setAdminTeacherManagementVisible(false);
 
 	// Show Login Type	
 	if (!wh->isWindowCreated("loginType")) {
 		wh->createLoginTypeWindows(hWnd);
 	}
-	wh->setLoginTypeVisibility(true);
+	wh->setLoginTypeVisible();
 }
 
 void User::manageData(HWND hWnd) {
@@ -74,13 +74,13 @@ void User::login(HWND hWnd) {
 	WindowHandler* wh = WindowHandler::getInstance();
 
 	// Hide Login Type
-	wh->setLoginTypeVisibility(false);
+	wh->setLoginTypeVisible(false);
 
 	// Show Admin Login
 	if (!wh->isWindowCreated("adminLogin")) {
 		wh->createAdminLoginWindows(hWnd);
 	}
-	wh->setAdminLoginVisibility(true);
+	wh->setAdminLoginVisible();
 }
 
 /* Admin interface Wnd */
@@ -88,16 +88,16 @@ void Admin::showInterface(HWND hWnd) {
 	WindowHandler* wh = WindowHandler::getInstance();
 
 	// Hide other Admin windows
-	wh->setAdminLoginVisibility(false);
-	wh->setAdminCourseManagementVisibility(false);
-	wh->setAdminTeacherManagementVisibility(false);
-	wh->setAdminRoomManagementVisibility(false);
+	wh->setAdminLoginVisible(false);
+	wh->setAdminCourseManagementVisible(false);
+	wh->setAdminTeacherManagementVisible(false);
+	wh->setAdminRoomManagementVisible(false);
 
 	// Show Admin Inferface
 	if (!wh->isWindowCreated("adminInterface")) {
 		wh->createAdminInterfaceWindows(hWnd);
 	}
-	wh->setAdminInterfaceVisibility(true);
+	wh->setAdminInterfaceVisible();
 }
 
 void User::addData(HWND hWnd) {
@@ -250,15 +250,15 @@ void CourseManagement::showInterface(HWND hWnd) {
 	WindowHandler* wh = WindowHandler::getInstance();
 
 	// Hide other Admin windows
-	wh->setAdminInterfaceVisibility(false);
-	wh->setAdminAddCourseVisibility(false);
-	wh->setAdminManageCourseVisibility(false);
+	wh->setAdminInterfaceVisible(false);
+	wh->setAdminAddCourseVisible(false);
+	wh->setAdminManageCourseVisible(false);
 
 	// Show Admin Inferface
 	if (!wh->isWindowCreated("adminCourseManagement")) {
 		wh->createAdminCourseManagementWindows(hWnd);
 	}
-	wh->setAdminCourseManagementVisibility(true);
+	wh->setAdminCourseManagementVisible();
 }
 
 /* Admin manage courses Wnd */
@@ -266,13 +266,13 @@ void CourseManagement::manageData(HWND hWnd) {
 	WindowHandler* wh = WindowHandler::getInstance();
 
 	// Hide other Admin windows
-	wh->setAdminCourseManagementVisibility(false);
+	wh->setAdminCourseManagementVisible(false);
 
 	// Show Manage Course
 	if (!wh->isWindowCreated("adminManageCourse")) {
 		wh->createAdminManageCourseWindows(hWnd);
 	}
-	wh->setAdminManageCourseVisibility(true);
+	wh->setAdminManageCourseVisible();
 }
 
 /* Admin add course Wnd */
@@ -280,13 +280,13 @@ void CourseManagement::addData(HWND hWnd) {
 	WindowHandler* wh = WindowHandler::getInstance();
 
 	// Hide Course Management
-	wh->setAdminCourseManagementVisibility(false);
+	wh->setAdminCourseManagementVisible(false);
 
 	// Show Add Course
 	if (!wh->isWindowCreated("adminAddCourse")) {
 		wh->createAdminAddCourseWindows(hWnd);
 	}
-	wh->setAdminAddCourseVisibility(true);
+	wh->setAdminAddCourseVisible();
 }
 
 /* Admin insert course to DB */
@@ -370,15 +370,15 @@ void TeacherManagement::showInterface(HWND hWnd) {
 	WindowHandler* wh = WindowHandler::getInstance();
 
 	// Hide other Admin windows
-	wh->setAdminInterfaceVisibility(false);
-	wh->setAdminAddTeacherVisibility(false);
-	wh->setAdminManageTeacherVisibility(false);
+	wh->setAdminInterfaceVisible(false);
+	wh->setAdminAddTeacherVisible(false);
+	wh->setAdminManageTeacherVisible(false);
 
 	// Show Teacher Management
 	if (!wh->isWindowCreated("adminTeacherManagement")) {
 		wh->createAdminTeacherManagementWindows(hWnd);
 	}
-	wh->setAdminTeacherManagementVisibility(true);
+	wh->setAdminTeacherManagementVisible();
 }
 
 /* Admin manage teachers Wnd */
@@ -386,13 +386,13 @@ void TeacherManagement::manageData(HWND hWnd) {
 	WindowHandler* wh = WindowHandler::getInstance();
 
 	// Hide other Admin windows
-	wh->setAdminTeacherManagementVisibility(false);
+	wh->setAdminTeacherManagementVisible(false);
 
 	// Show Admin Inferface
 	if (!wh->isWindowCreated("adminManageTeacher")) {
 		wh->createAdminManageTeacherWindows(hWnd);
 	}
-	wh->setAdminManageTeacherVisibility(true);
+	wh->setAdminManageTeacherVisible();
 }
 
 /* Admin add teacher Wnd */
@@ -400,13 +400,13 @@ void TeacherManagement::addData(HWND hWnd) {
 	WindowHandler* wh = WindowHandler::getInstance();
 
 	// Hide Teacher Management
-	wh->setAdminTeacherManagementVisibility(false);
+	wh->setAdminTeacherManagementVisible(false);
 
 	// Show Add Teacher
 	if (!wh->isWindowCreated("adminAddTeacher")) {
 		wh->createAdminAddTeacherWindows(hWnd);
 	}
-	wh->setAdminAddTeacherVisibility(true);
+	wh->setAdminAddTeacherVisible();
 }
 
 /* Admin insert teacher into DB */
@@ -625,15 +625,15 @@ void RoomManagement::showInterface(HWND hWnd) {
 	WindowHandler* wh = WindowHandler::getInstance();
 
 	// Hide other Admin windows
-	wh->setAdminInterfaceVisibility(false);
-	wh->setAdminManageRoomVisibility(false);
-	wh->setAdminAddRoomVisibility(false);
+	wh->setAdminInterfaceVisible(false);
+	wh->setAdminManageRoomVisible(false);
+	wh->setAdminAddRoomVisible(false);
 
 	// Show Admin Inferface
 	if (!wh->isWindowCreated("adminRoomManagement")) {
 		wh->createAdminRoomManagementWindows(hWnd);
 	}
-	wh->setAdminRoomManagementVisibility(true);
+	wh->setAdminRoomManagementVisible();
 }
 
 /* Admin manage rooms Wnd */
@@ -641,13 +641,13 @@ void RoomManagement::manageData(HWND hWnd) {
 	WindowHandler* wh = WindowHandler::getInstance();
 
 	// Hide other Admin windows
-	wh->setAdminRoomManagementVisibility(false);
+	wh->setAdminRoomManagementVisible(false);
 
 	// Show Admin Inferface
 	if (!wh->isWindowCreated("adminManageRoom")) {
 		wh->createAdminManageRoomWindows(hWnd);
 	}
-	wh->setAdminManageRoomVisibility(true);
+	wh->setAdminManageRoomVisible();
 }
 
 /* Admin add clasroom Wnd */
@@ -655,13 +655,13 @@ void RoomManagement::addData(HWND hWnd) {
 	WindowHandler* wh = WindowHandler::getInstance();
 
 	// Hide Teacher Management
-	wh->setAdminRoomManagementVisibility(false);
+	wh->setAdminRoomManagementVisible(false);
 
 	// Show Add Teacher
 	if (!wh->isWindowCreated("adminAddRoom")) {
 		wh->createAdminAddRoomWindows(hWnd);
 	}
-	wh->setAdminAddRoomVisibility(true);
+	wh->setAdminAddRoomVisible();
 }
 
 /* Admin insert classroom into DB */
@@ -816,13 +816,13 @@ void Teacher::showInterface(HWND hWnd) {
 	WindowHandler* wh = WindowHandler::getInstance();
 
 	// Hide Login Type
-	wh->setLoginTypeVisibility(false);
+	wh->setLoginTypeVisible(false);
 
 	// Show Teacher Login
 	if (!wh->isWindowCreated("teacherLogin")) {
 		wh->createTeacherLoginWindows(hWnd);
 	}
-	wh->setTeacherLoginVisibility(true);
+	wh->setTeacherLoginVisible();
 }
 
 /* Student interface Wnd */
@@ -830,11 +830,11 @@ void Student::showInterface(HWND hWnd) {
 	WindowHandler* wh = WindowHandler::getInstance();
 
 	// Hide Login Type
-	wh->setLoginTypeVisibility(false);
+	wh->setLoginTypeVisible(false);
 
 	// Show Student Login
 	if (!wh->isWindowCreated("studentLogin")) {
 		wh->createStudentLoginWindows(hWnd);
 	}
-	wh->setStudentLoginVisibility(true);
+	wh->setStudentLoginVisible();
 }

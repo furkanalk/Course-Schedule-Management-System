@@ -90,7 +90,7 @@ void WindowHandler::createLoginTypeWindows(HWND hWnd) {
     SendMessage(loginType.student, WM_SETFONT, (WPARAM)hFontH2, TRUE);
 }
 
-void WindowHandler::setLoginTypeVisibility(bool isVisible) {
+void WindowHandler::setLoginTypeVisible(bool isVisible) {
     int cmdShow = isVisible ? SW_SHOW : SW_HIDE;
     ShowWindow(loginType.welcome, cmdShow);
     ShowWindow(loginType.admin, cmdShow);
@@ -126,7 +126,7 @@ void WindowHandler::createAdminLoginWindows(HWND hWnd) {
     SendMessage(adminLogin.proceed, WM_SETFONT, (WPARAM)hFontH2, TRUE);
 }
 
-void WindowHandler::setAdminLoginVisibility(bool visible) {
+void WindowHandler::setAdminLoginVisible(bool visible) {
     int cmdShow = visible ? SW_SHOW : SW_HIDE;
     ShowWindow(adminLogin.header, cmdShow);
     ShowWindow(adminLogin.username, cmdShow);
@@ -159,7 +159,7 @@ void WindowHandler::createAdminInterfaceWindows(HWND hWnd) {
     SendMessage(adminInterface.previous, WM_SETFONT, (WPARAM)hFontH3, TRUE);
 }
 
-void WindowHandler::setAdminInterfaceVisibility(bool visible) {
+void WindowHandler::setAdminInterfaceVisible(bool visible) {
     int cmdShow = visible ? SW_SHOW : SW_HIDE;
     ShowWindow(adminInterface.header, cmdShow);
     ShowWindow(adminInterface.courseManagement, cmdShow);
@@ -192,7 +192,7 @@ void WindowHandler::createAdminCourseManagementWindows(HWND hWnd) {
     SendMessage(adminCourseManagement.proceed, WM_SETFONT, (WPARAM)hFontH3, TRUE);
 }
 
-void WindowHandler::setAdminCourseManagementVisibility(bool visible) {
+void WindowHandler::setAdminCourseManagementVisible(bool visible) {
     int cmdShow = visible ? SW_SHOW : SW_HIDE;
     ShowWindow(adminCourseManagement.header, cmdShow);
     ShowWindow(adminCourseManagement.syllabus, cmdShow);
@@ -262,7 +262,7 @@ void WindowHandler::createAdminManageCourseWindows(HWND hWnd) {
     SendMessage(adminManageCourse.update, WM_SETFONT, (WPARAM)hFontH3, TRUE);*/
 }
 
-void WindowHandler::setAdminManageCourseVisibility(bool visible) {
+void WindowHandler::setAdminManageCourseVisible(bool visible) {
     int cmdShow = visible ? SW_SHOW : SW_HIDE;
     ShowWindow(adminManageCourse.header, cmdShow);
     ShowWindow(adminManageCourse.courseList, cmdShow);
@@ -314,7 +314,7 @@ void WindowHandler::createAdminAddCourseWindows(HWND hWnd) {
     adminAddCourse.insert = CreateWindow(TEXT("button"), TEXT("Add"), WS_BORDER | WS_CHILD, 400, 480, 80, 30, hWnd, (HMENU)152, NULL, NULL);
 }
 
-void WindowHandler::setAdminAddCourseVisibility(bool visible) {
+void WindowHandler::setAdminAddCourseVisible(bool visible) {
     int cmdShow = visible ? SW_SHOW : SW_HIDE;
     ShowWindow(adminAddCourse.header, cmdShow);
     ShowWindow(adminAddCourse.course, cmdShow);
@@ -347,7 +347,7 @@ void WindowHandler::createAdminTeacherManagementWindows(HWND hWnd) {
     SendMessage(adminTeacherManagement.proceed, WM_SETFONT, (WPARAM)hFontH3, TRUE);
 }
 
-void WindowHandler::setAdminTeacherManagementVisibility(bool visible) {
+void WindowHandler::setAdminTeacherManagementVisible(bool visible) {
     int cmdShow = visible ? SW_SHOW : SW_HIDE;
     ShowWindow(adminTeacherManagement.header, cmdShow);
     ShowWindow(adminTeacherManagement.showTeachers, cmdShow);
@@ -427,7 +427,7 @@ void WindowHandler::createAdminManageTeacherWindows(HWND hWnd) {
     SendMessage(adminManageTeacher.update, WM_SETFONT, (WPARAM)hFontH3, TRUE);*/
 }
 
-void WindowHandler::setAdminManageTeacherVisibility(bool visible) {
+void WindowHandler::setAdminManageTeacherVisible(bool visible) {
     int cmdShow = visible ? SW_SHOW : SW_HIDE;
     ShowWindow(adminManageTeacher.header, cmdShow);
     ShowWindow(adminManageTeacher.teacherList, cmdShow);
@@ -491,7 +491,7 @@ void WindowHandler::createAdminAddTeacherWindows(HWND hWnd) {
     SendMessage(adminAddTeacher.insert, WM_SETFONT, (WPARAM)hFontH3, TRUE);
 }
 
-void WindowHandler::setAdminAddTeacherVisibility(bool visible) {
+void WindowHandler::setAdminAddTeacherVisible(bool visible) {
     int cmdShow = visible ? SW_SHOW : SW_HIDE;
     ShowWindow(adminAddTeacher.header, cmdShow);
     ShowWindow(adminAddTeacher.fullname, cmdShow);
@@ -531,7 +531,7 @@ void WindowHandler::createAdminRoomManagementWindows(HWND hWnd) {
     SendMessage(adminRoomManagement.proceed, WM_SETFONT, (WPARAM)hFontH3, TRUE);
 }
 
-void WindowHandler::setAdminRoomManagementVisibility(bool visible) {
+void WindowHandler::setAdminRoomManagementVisible(bool visible) {
     int cmdShow = visible ? SW_SHOW : SW_HIDE;
     ShowWindow(adminRoomManagement.header, cmdShow);
     ShowWindow(adminRoomManagement.showRooms, cmdShow);
@@ -584,7 +584,7 @@ void WindowHandler::createAdminManageRoomWindows(HWND hWnd) {
     SendMessage(adminManageRoom.update, WM_SETFONT, (WPARAM)hFontH3, TRUE);
 }
 
-void WindowHandler::setAdminManageRoomVisibility(bool visible) {
+void WindowHandler::setAdminManageRoomVisible(bool visible) {
     int cmdShow = visible ? SW_SHOW : SW_HIDE;
     ShowWindow(adminManageRoom.header, cmdShow);
     ShowWindow(adminManageRoom.classList, cmdShow);
@@ -632,7 +632,7 @@ void WindowHandler::createAdminAddRoomWindows(HWND hWnd) {
     SendMessage(adminAddRoom.insert, WM_SETFONT, (WPARAM)hFontH3, TRUE);
 }
 
-void WindowHandler::setAdminAddRoomVisibility(bool visible) {
+void WindowHandler::setAdminAddRoomVisible(bool visible) {
     int cmdShow = visible ? SW_SHOW : SW_HIDE;
     ShowWindow(adminAddRoom.header, cmdShow);
     ShowWindow(adminAddRoom.name, cmdShow);
@@ -673,7 +673,7 @@ void WindowHandler::createTeacherLoginWindows(HWND hWnd) {
     SendMessage(teacherLogin.proceed, WM_SETFONT, (WPARAM)hFontH2, TRUE);
 }
 
-void WindowHandler::setTeacherLoginVisibility(bool visible) {
+void WindowHandler::setTeacherLoginVisible(bool visible) {
     int cmdShow = visible ? SW_SHOW : SW_HIDE;
     ShowWindow(teacherLogin.header, cmdShow);
     ShowWindow(teacherLogin.username, cmdShow);
@@ -712,7 +712,7 @@ void WindowHandler::createStudentLoginWindows(HWND hWnd) {
     SendMessage(studentLogin.proceed, WM_SETFONT, (WPARAM)hFontH2, TRUE);
 }
 
-void WindowHandler::setStudentLoginVisibility(bool visible) {
+void WindowHandler::setStudentLoginVisible(bool visible) {
     int cmdShow = visible ? SW_SHOW : SW_HIDE;
     ShowWindow(studentLogin.header, cmdShow);
     ShowWindow(studentLogin.username, cmdShow);
