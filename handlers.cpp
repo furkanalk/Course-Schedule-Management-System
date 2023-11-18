@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <iterator>
 
-std::unique_ptr<WindowHandler> WindowHandler::instance = nullptr;
+WindowHandler WindowHandler::wh;
 
 // Constructor to set the default values of window status' to FALSE and windows' to NULL
 WindowHandler::WindowHandler() {
@@ -29,12 +29,12 @@ WindowHandler::WindowHandler() {
 }
 
 // Set window to created
-void WindowHandler::setWindowCreated(const std::string& windowName, bool isCreated) {
+void WindowHandler::setWindowCreated(std::string windowName, bool isCreated) {
     windowCreationStatus[windowName] = isCreated;
 }
 
 // Check if the window is already created
-bool WindowHandler::isWindowCreated(const std::string& windowName) {
+bool WindowHandler::isWindowCreated(std::string windowName) {
     if (windowCreationStatus.find(windowName) != windowCreationStatus.end())
         return windowCreationStatus[windowName];
     else
@@ -42,13 +42,11 @@ bool WindowHandler::isWindowCreated(const std::string& windowName) {
 }
 
 WindowHandler* WindowHandler::getInstance() {
-    if (instance == nullptr)
-        instance = std::make_unique<WindowHandler>();
-    return instance.get();
+    return &wh;
 }
 
 // Convert to wide string
-std::wstring WindowHandler::convertToWideString(const std::string& str) {
+std::wstring WindowHandler::convertToWideString(std::string str) {
     int bufferLength = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, NULL, 0);
 
     if (bufferLength == 0)
@@ -75,10 +73,10 @@ std::wstring WindowHandler::getComboBoxSelectedText(HWND comboBox) {
     return std::wstring(buffer.begin(), buffer.end());
 }
 
-// Error Display
-void WindowHandler::displayError(const std::wstring& message, HWND hWnd) {
-    MessageBox(hWnd, message.c_str(), TEXT("Error"), MB_OK | MB_ICONERROR);
-}
+//// Error Display
+//void WindowHandler::displayError(const std::wstring& message, HWND hWnd) {
+//    MessageBox(hWnd, message.c_str(), TEXT("Error"), MB_OK | MB_ICONERROR);
+//}
 
 // Get input
 std::wstring WindowHandler::getWindowText(HWND hWnd) {
@@ -239,41 +237,27 @@ void WindowHandler::createAdminManageCourseWindows(HWND hWnd) {
     adminManageCourse.update = CreateWindow(TEXT("button"), TEXT("Update"), WS_BORDER | WS_CHILD, 400, 480, 80, 30, hWnd, (HMENU)215, NULL, NULL);
     adminManageCourse.previous = CreateWindow(TEXT("button"), TEXT("Back"), WS_BORDER | WS_CHILD, 300, 480, 80, 30, hWnd, (HMENU)216, NULL, NULL);
 
-    auto sqliteHandler = SQLiteHandler::getInstance("courseScheduleDB.sqlite");
-    CourseManagement allCourses;
-    try {
-        allCourses = sqliteHandler->getCourses();
-    }
-    catch (const std::runtime_error& e) {
-        std::wstring errorMessage = L"Error: " + std::wstring(e.what(), e.what() + strlen(e.what()));
-        MessageBox(hWnd, errorMessage.c_str(), TEXT("Database Error"), MB_OK | MB_ICONERROR);
-    }
+    SQLiteHandler* sqliteHandler = SQLiteHandler::getInstance();
+    CourseManagement* allCourses = sqliteHandler->getCourses();
 
-    auto ids = allCourses.getIds();
-    auto names = allCourses.getNames();
+    auto ids = allCourses->getIds();
+    auto names = allCourses->getNames();
 
     SendMessage(adminManageCourse.courseList, CB_RESETCONTENT, 0, 0);
 
-    for (size_t i = 0; i < names.size(); ++i) {
+    for (int i = 0; i < names.size(); i++) {
         std::wstring wideName = convertToWideString(names[i]);
         LRESULT index = SendMessage(adminManageCourse.courseList, CB_ADDSTRING, 0, (LPARAM)wideName.c_str());
         SendMessage(adminManageCourse.courseList, CB_SETITEMDATA, index, (LPARAM)ids[i]);
     }
 
-    RoomManagement allClassrooms;
-    try {
-        allClassrooms = sqliteHandler->getClassrooms();
-    }
-    catch (const std::runtime_error& e) {
-        std::wstring errorMessage = L"Error retrieving classrooms: " + std::wstring(e.what(), e.what() + strlen(e.what()));
-        MessageBox(hWnd, errorMessage.c_str(), TEXT("Database Error"), MB_OK | MB_ICONERROR);
-        return;
-    }
+    RoomManagement* allClassrooms = sqliteHandler->getClassrooms();
 
-    auto classroomNames = allClassrooms.getNames();
+    auto classroomNames = allClassrooms->getNames();
     SendMessage(adminManageCourse.courseRoomFirst, CB_RESETCONTENT, 0, 0);
     SendMessage(adminManageCourse.courseRoomSecond, CB_RESETCONTENT, 0, 0);
-    for (const auto& name : classroomNames) {
+
+    for (auto& name : classroomNames) {
         std::wstring wideName = convertToWideString(name);
         SendMessage(adminManageCourse.courseRoomFirst, CB_ADDSTRING, 0, (LPARAM)wideName.c_str());
         SendMessage(adminManageCourse.courseRoomSecond, CB_ADDSTRING, 0, (LPARAM)wideName.c_str());
@@ -316,29 +300,18 @@ void WindowHandler::createAdminAddCourseWindows(HWND hWnd) {
     adminAddCourse.courseInput = CreateWindow(TEXT("EDIT"), TEXT(""), WS_BORDER | WS_CHILD, 350, 150, 220, 25, hWnd, (HMENU)153, NULL, NULL);
     adminAddCourse.headerSecond = CreateWindow(TEXT("static"), TEXT("Select Classes"), WS_CHILD | ES_CENTER, 320, 250, 160, 40, hWnd, NULL, NULL, NULL);
 
-    auto sqliteHandler = SQLiteHandler::getInstance("courseScheduleDB.sqlite");
-
-    RoomManagement allClassrooms;
-    try {
-        allClassrooms = sqliteHandler->getClassrooms();
-    }
-    catch (const std::runtime_error& e) {
-        std::wstring errorMessage = L"Database error: " + std::wstring(e.what(), e.what() + strlen(e.what()));
-        OutputDebugString(errorMessage.c_str());
-        return;
-    }
+    SQLiteHandler* sqliteHandler = SQLiteHandler::getInstance();
+    RoomManagement* allClassrooms = sqliteHandler->getClassrooms();
 
     adminAddCourse.classList = CreateWindowEx(0, WC_LISTBOX, NULL, WS_CHILD | WS_VISIBLE | WS_VSCROLL | LBS_NOTIFY | LBS_MULTIPLESEL, 200, 300, 400, 100, hWnd, (HMENU)150, GetModuleHandle(NULL), NULL);
 
-    const auto& ids = allClassrooms.getIds();
-    const auto& names = allClassrooms.getNames();
-    const auto& floors = allClassrooms.getFloors();
-    const auto& categories = allClassrooms.getCategories();
+    auto ids = allClassrooms->getIds();
+    auto names = allClassrooms->getNames();
+    auto floors = allClassrooms->getFloors();
+    auto categories = allClassrooms->getCategories();
 
-    for (int i = 0; i < names.size(); ++i) {
-        std::wstring itemText = convertToWideString(names[i]) + L" - " +
-            convertToWideString(floors[i]) + L" - " +
-            convertToWideString(categories[i]);
+    for (int i = 0; i < names.size(); i++) {
+        std::wstring itemText = convertToWideString(names[i]) + L" - " + convertToWideString(floors[i]) + L" - " + convertToWideString(categories[i]);
 
         LRESULT index = SendMessage(adminAddCourse.classList, LB_ADDSTRING, 0, (LPARAM)itemText.c_str());
 
@@ -426,21 +399,14 @@ void WindowHandler::createAdminManageTeacherWindows(HWND hWnd) {
     adminManageTeacher.update = CreateWindow(TEXT("button"), TEXT("Update"), WS_BORDER | WS_CHILD, 400, 480, 80, 30, hWnd, (HMENU)200, NULL, NULL);
     adminManageTeacher.previous = CreateWindow(TEXT("button"), TEXT("Back"), WS_BORDER | WS_CHILD, 300, 480, 80, 30, hWnd, (HMENU)201, NULL, NULL);
 
-    auto sqliteHandler = SQLiteHandler::getInstance("courseScheduleDB.sqlite");
-    TeacherManagement allTeachers;
-    try {
-        allTeachers = sqliteHandler->getTeachers();
-    }
-    catch (const std::runtime_error& e) {
-        std::wstring errorMessage = L"Error: " + std::wstring(e.what(), e.what() + strlen(e.what()));
-        MessageBox(hWnd, errorMessage.c_str(), TEXT("Database Error"), MB_OK | MB_ICONERROR);
-    }
+    SQLiteHandler* sqliteHandler = SQLiteHandler::getInstance();
+    TeacherManagement* allTeachers = sqliteHandler->getTeachers();
 
-    const auto& ids = allTeachers.getIds();
-    const auto& names = allTeachers.getNames();
+    auto ids = allTeachers->getIds();
+    auto names = allTeachers->getNames();
 
     SendMessage(adminManageTeacher.teacherList, CB_RESETCONTENT, 0, 0);
-    for (size_t i = 0; i < names.size(); ++i) {
+    for (int i = 0; i < names.size(); i++) {
         std::wstring wideName = convertToWideString(names[i]);
         LRESULT index = SendMessage(adminManageTeacher.teacherList, CB_ADDSTRING, 0, (LPARAM)wideName.c_str());
         SendMessage(adminManageTeacher.teacherList, CB_SETITEMDATA, index, (LPARAM)ids[i]);
@@ -458,7 +424,7 @@ void WindowHandler::createAdminManageTeacherWindows(HWND hWnd) {
 
     for (HWND comboBox : boolComboBoxes) {
         SendMessage(comboBox, CB_RESETCONTENT, 0, 0);
-        for (const auto& option : boolOptions) {
+        for (auto& option : boolOptions) {
             SendMessage(comboBox, CB_ADDSTRING, 0, (LPARAM)option.c_str());
         }
         SendMessage(comboBox, CB_SETCURSEL, -1, 0);
@@ -607,22 +573,15 @@ void WindowHandler::createAdminManageRoomWindows(HWND hWnd) {
     adminManageRoom.update = CreateWindow(TEXT("button"), TEXT("Update"), WS_BORDER | WS_CHILD, 400, 480, 80, 30, hWnd, (HMENU)183, NULL, NULL);
     adminManageRoom.previous = CreateWindow(TEXT("button"), TEXT("Back"), WS_BORDER | WS_CHILD, 300, 480, 80, 30, hWnd, (HMENU)184, NULL, NULL);
 
-    auto sqliteHandler = SQLiteHandler::getInstance("courseScheduleDB.sqlite");
-    RoomManagement allClassrooms;
-    try {
-        allClassrooms = sqliteHandler->getClassrooms();
-    }
-    catch (const std::runtime_error& e) {
-        std::wstring errorMessage = L"Error: " + std::wstring(e.what(), e.what() + strlen(e.what()));
-        MessageBox(hWnd, errorMessage.c_str(), TEXT("Database Error"), MB_OK | MB_ICONERROR);
-    }
+    auto sqliteHandler = SQLiteHandler::getInstance();
+    RoomManagement* allClassrooms = sqliteHandler->getClassrooms();
 
-    const auto& ids = allClassrooms.getIds();
-    const auto& names = allClassrooms.getNames();
+    auto ids = allClassrooms->getIds();
+    auto names = allClassrooms->getNames();
 
     SendMessage(adminManageRoom.classList, CB_RESETCONTENT, 0, 0);
 
-    for (size_t i = 0; i < names.size(); ++i) {
+    for (int i = 0; i < names.size(); i++) {
         std::wstring wideName = convertToWideString(names[i]);
         LRESULT index = SendMessage(adminManageRoom.classList, CB_ADDSTRING, 0, (LPARAM)wideName.c_str());
         SendMessage(adminManageRoom.classList, CB_SETITEMDATA, index, (LPARAM)ids[i]);

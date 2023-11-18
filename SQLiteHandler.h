@@ -10,36 +10,34 @@
 
 class SQLiteHandler {
 private:
-    static std::unique_ptr<SQLiteHandler> instance;
     sqlite3* db;
-    std::string databaseName;
-public:
+    static SQLiteHandler dbHandler;
     RoomManagement classroomData;
     CourseManagement courseData;
     TeacherManagement teacherData;
-
-    SQLiteHandler(const std::string& databaseName);
-    SQLiteHandler(const SQLiteHandler&) = delete;
-    SQLiteHandler& operator=(const SQLiteHandler&) = delete;
-
+public:
+    SQLiteHandler();
     ~SQLiteHandler();
 
-    static SQLiteHandler* getInstance(const std::string databaseName);
+    static SQLiteHandler* getInstance();
 
-    bool insert(TeacherManagement& teacherData);
-    bool update(TeacherManagement& updatedTeachers);
-    bool deleteData(TeacherManagement& teachers);
-    TeacherManagement getTeachers();
+    // Teachers
+    bool insert(TeacherManagement& teacher);
+    bool update(TeacherManagement& updatedTeacher);
+    bool deleteData(TeacherManagement& teacher);
+    TeacherManagement* getTeachers();
 
-    bool insert(RoomManagement& roomData);
-    bool update(RoomManagement& updatedClassrooms);
-    bool deleteData(RoomManagement& rooms);
-    RoomManagement getClassrooms();
+    // Classrooms
+    bool insert(RoomManagement& room);
+    bool update(RoomManagement& updatedClassroom);
+    bool deleteData(RoomManagement& room);
+    RoomManagement* getClassrooms();
 
-    bool insert(CourseManagement& courseData);
-    bool update(CourseManagement& updatedCourses);
-    bool deleteData(CourseManagement& courses);
-    CourseManagement getCourses();
+    // Courses
+    bool insert(CourseManagement& course);
+    bool update(CourseManagement& updatedCourse);
+    bool deleteData(CourseManagement& course);
+    CourseManagement* getCourses();
 };
 
 #endif

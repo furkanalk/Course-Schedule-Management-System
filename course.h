@@ -11,11 +11,15 @@
 class User {
 protected:
 	int currentId;
+	int currentIndex;
 	std::vector<int> ids;
 	std::vector<std::string> names;
 public:
 	int getCurrentId();
 	void setCurrentId(int id);
+
+	int getCurrentIndex();
+	void setCurrentIndex(int id);
 
 	void addId(int id);
 	std::vector<int> getIds();

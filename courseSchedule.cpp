@@ -329,95 +329,81 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             if (selectedCount > 2)
                 MessageBox(hWnd, L"Only two selections are allowed.", L"Selection Limit", MB_ICONWARNING | MB_OK);
         }
-        static int previousSelectionIndex = -1;
-
-        // Course fetch
-        if (wmId == 211) {
-            try {
-                HWND hCourseComboBox = GetDlgItem(hWnd, 210);
-                int idx = SendMessage(hCourseComboBox, CB_GETCURSEL, 0, 0);
-                if (idx == CB_ERR) {
-                    MessageBox(hWnd, L"Please make a selection.", L"Selection Error", MB_ICONWARNING | MB_OK);
-                    return 0;
-                }
-
-                SQLiteHandler* dbHandler = SQLiteHandler::getInstance("courseScheduleDB.sqlite");
-                CourseManagement allCourses = dbHandler->getCourses();
-
-                auto courseNames = allCourses.getNames();
-                auto courseRoomNames = allCourses.getRooms()[idx];
-
-                HWND hNameInput = GetDlgItem(hWnd, 213);
-                SetWindowText(hNameInput, std::wstring(courseNames[idx].begin(), courseNames[idx].end()).c_str());
-
-                HWND hFirstRoomInput = GetDlgItem(hWnd, 218);
-                HWND hSecondRoomInput = GetDlgItem(hWnd, 219);
-
-                if (courseRoomNames.size() >= 1) {
-                    SetWindowText(hFirstRoomInput, std::wstring(courseRoomNames[0].begin(), courseRoomNames[0].end()).c_str());
-                }
-                else {
-                    SetWindowText(hFirstRoomInput, L"-Empty-");
-                }
-
-                if (courseRoomNames.size() >= 2) {
-                    SetWindowText(hSecondRoomInput, std::wstring(courseRoomNames[1].begin(), courseRoomNames[1].end()).c_str());
-                }
-                else {
-                    SetWindowText(hSecondRoomInput, L"-Empty-");
-                }
+  
+        if (wmId == 211) { // Course fetch
+            HWND hCourseComboBox = GetDlgItem(hWnd, 210);
+            int idx = SendMessage(hCourseComboBox, CB_GETCURSEL, 0, 0);
+            if (idx == CB_ERR) {
+                MessageBox(hWnd, L"Please make a selection.", L"Selection Error", MB_ICONWARNING | MB_OK);
+                return 0;
             }
-            catch (const std::exception& e) {
-                std::wstring errorMessage = L"Error fetching course data: " + std::wstring(e.what(), e.what() + std::strlen(e.what()));
-                MessageBox(hWnd, errorMessage.c_str(), L"Database Error", MB_OK | MB_ICONERROR);
+
+            SQLiteHandler* dbHandler = SQLiteHandler::getInstance();
+            CourseManagement* allCourses = dbHandler->getCourses();
+
+            auto courseNames = allCourses->getNames();
+            auto courseRoomNames = allCourses->getRooms()[idx];
+
+            HWND hNameInput = GetDlgItem(hWnd, 213);
+            SetWindowText(hNameInput, std::wstring(courseNames[idx].begin(), courseNames[idx].end()).c_str());
+
+            HWND hFirstRoomInput = GetDlgItem(hWnd, 218);
+            HWND hSecondRoomInput = GetDlgItem(hWnd, 219);
+
+            if (courseRoomNames.size() >= 1) {
+                SetWindowText(hFirstRoomInput, std::wstring(courseRoomNames[0].begin(), courseRoomNames[0].end()).c_str());
             }
-            return 0;
+            else {
+                SetWindowText(hFirstRoomInput, L"-Empty-");
+            }
+
+            if (courseRoomNames.size() >= 2) {
+                SetWindowText(hSecondRoomInput, std::wstring(courseRoomNames[1].begin(), courseRoomNames[1].end()).c_str());
+            }
+            else {
+                SetWindowText(hSecondRoomInput, L"-Empty-");
+            }
         }
 
         if (wmId == 215) { // Update course
             if (!courseMngmt->updateCourse(hWnd, hCourseComboBox)) { return 0; }
         }
-        if (wmId == 212) { // Update course
+        if (wmId == 212) { // Delete course
             if (!courseMngmt->removeCourse(hWnd, hCourseComboBox)) { return 0; }
         }
 
         // Teacher fetch
         if (wmId == 191) {
-            try {
-                int itemCount = (int)SendMessage(hTeacherComboBox, CB_GETCOUNT, 0, 0);
-                int idx = (int)SendMessage(hTeacherComboBox, CB_GETCURSEL, 0, 0);
+            int itemCount = (int)SendMessage(hTeacherComboBox, CB_GETCOUNT, 0, 0);
+            int idx = (int)SendMessage(hTeacherComboBox, CB_GETCURSEL, 0, 0);
 
-                if (idx == CB_ERR) {
-                    MessageBox(hWnd, L"Please make a selection.", L"Selection Error", MB_ICONWARNING | MB_OK);
-                    break;
-                }
-
-                SQLiteHandler* dbHandler = SQLiteHandler::getInstance("courseScheduleDB.sqlite");
-                TeacherManagement allTeachers = dbHandler->getTeachers();
-
-                WindowHandler* wh = WindowHandler::getInstance();
-                std::wstring teacherName = wh->convertToWideString(allTeachers.getNames()[idx]);
-                SetWindowText(GetDlgItem(hWnd, 193), teacherName.c_str());
-
-                auto workdays = allTeachers.getWorkdays()[idx];
-                HWND hMonday = GetDlgItem(hWnd, 194);
-                HWND hTuesday = GetDlgItem(hWnd, 195);
-                HWND hWednesday = GetDlgItem(hWnd, 196);
-                HWND hThursday = GetDlgItem(hWnd, 197);
-                HWND hFriday = GetDlgItem(hWnd, 198);
-                HWND hSaturday = GetDlgItem(hWnd, 199);
-
-                SendMessage(hMonday, CB_SETCURSEL, workdays[0] ? 0 : 1, 0);
-                SendMessage(hTuesday, CB_SETCURSEL, workdays[1] ? 0 : 1, 0);
-                SendMessage(hWednesday, CB_SETCURSEL, workdays[2] ? 0 : 1, 0);
-                SendMessage(hThursday, CB_SETCURSEL, workdays[3] ? 0 : 1, 0);
-                SendMessage(hFriday, CB_SETCURSEL, workdays[4] ? 0 : 1, 0);
-                SendMessage(hSaturday, CB_SETCURSEL, workdays[5] ? 0 : 1, 0);
+            if (idx == CB_ERR) {
+                MessageBox(hWnd, L"Please make a selection.", L"Selection Error", MB_ICONWARNING | MB_OK);
+                break;
             }
-            catch (const std::runtime_error& e) {
-                std::wstring errorMessage = L"Error: " + std::wstring(e.what(), e.what() + strlen(e.what()));
-                MessageBox(hWnd, errorMessage.c_str(), L"Database Error", MB_OK | MB_ICONERROR);
-            }
+
+            SQLiteHandler* dbHandler = SQLiteHandler::getInstance();
+            TeacherManagement* allTeachers = dbHandler->getTeachers();
+
+            WindowHandler* wh = WindowHandler::getInstance();
+            std::wstring teacherName = wh->convertToWideString(allTeachers->getNames()[idx]);
+            SetWindowText(GetDlgItem(hWnd, 193), teacherName.c_str());
+
+            auto workdays = allTeachers->getWorkdays()[idx];
+
+            HWND hMonday = GetDlgItem(hWnd, 194);
+            HWND hTuesday = GetDlgItem(hWnd, 195);
+            HWND hWednesday = GetDlgItem(hWnd, 196);
+            HWND hThursday = GetDlgItem(hWnd, 197);
+            HWND hFriday = GetDlgItem(hWnd, 198);
+            HWND hSaturday = GetDlgItem(hWnd, 199);
+
+            SendMessage(hMonday, CB_SETCURSEL, workdays[0] ? 0 : 1, 0);
+            SendMessage(hTuesday, CB_SETCURSEL, workdays[1] ? 0 : 1, 0);
+            SendMessage(hWednesday, CB_SETCURSEL, workdays[2] ? 0 : 1, 0);
+            SendMessage(hThursday, CB_SETCURSEL, workdays[3] ? 0 : 1, 0);
+            SendMessage(hFriday, CB_SETCURSEL, workdays[4] ? 0 : 1, 0);
+            SendMessage(hSaturday, CB_SETCURSEL, workdays[5] ? 0 : 1, 0);
         }
 
         if (wmId == 200) { // Update teacher
@@ -430,37 +416,31 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
         // Classroom fetch
         if (wmId == 181) {
-            try {
-                int idx = (int)SendMessage(hRoomComboBox, CB_GETCURSEL, 0, 0);
-                if (idx == CB_ERR) {
-                    MessageBox(hWnd, L"Please make a selection.", L"Selection Error", MB_ICONWARNING | MB_OK);
-                    break;
-                }
-
-                SQLiteHandler* dbHandler = SQLiteHandler::getInstance("courseScheduleDB.sqlite");
-                RoomManagement allClassrooms = dbHandler->getClassrooms();
-
-                const auto& names = allClassrooms.getNames();
-                const auto& floors = allClassrooms.getFloors();
-                const auto& categories = allClassrooms.getCategories();
-
-                WindowHandler* wh = WindowHandler::getInstance();
-                const std::wstring name = wh->convertToWideString(names[idx]);
-                const std::wstring floor = wh->convertToWideString(floors[idx]);
-                const std::wstring category = wh->convertToWideString(categories[idx]);
-
-                HWND hNameInput = GetDlgItem(hWnd, 185);
-                HWND hFloorInput = GetDlgItem(hWnd, 186);
-                HWND hCategoryInput = GetDlgItem(hWnd, 187);
-
-                SetWindowText(hNameInput, name.c_str());
-                SetWindowText(hFloorInput, floor.c_str());
-                SetWindowText(hCategoryInput, category.c_str());
+            int idx = (int)SendMessage(hRoomComboBox, CB_GETCURSEL, 0, 0);
+            if (idx == CB_ERR) {
+                MessageBox(hWnd, L"Please make a selection.", L"Selection Error", MB_ICONWARNING | MB_OK);
+                break;
             }
-            catch (const std::runtime_error& e) {
-                std::wstring errorMessage = L"Error: " + std::wstring(e.what(), e.what() + strlen(e.what()));
-                MessageBox(hWnd, errorMessage.c_str(), L"Database Error", MB_OK | MB_ICONERROR);
-            }
+
+            SQLiteHandler* dbHandler = SQLiteHandler::getInstance();
+            RoomManagement* allClassrooms = dbHandler->getClassrooms();
+
+            const auto& names = allClassrooms->getNames();
+            const auto& floors = allClassrooms->getFloors();
+            const auto& categories = allClassrooms->getCategories();
+
+            WindowHandler* wh = WindowHandler::getInstance();
+            const std::wstring name = wh->convertToWideString(names[idx]);
+            const std::wstring floor = wh->convertToWideString(floors[idx]);
+            const std::wstring category = wh->convertToWideString(categories[idx]);
+
+            HWND hNameInput = GetDlgItem(hWnd, 185);
+            HWND hFloorInput = GetDlgItem(hWnd, 186);
+            HWND hCategoryInput = GetDlgItem(hWnd, 187);
+
+            SetWindowText(hNameInput, name.c_str());
+            SetWindowText(hFloorInput, floor.c_str());
+            SetWindowText(hCategoryInput, category.c_str());
         }
 
         if (wmId == 183) { // Update classroom

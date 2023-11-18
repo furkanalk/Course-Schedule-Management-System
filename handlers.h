@@ -9,7 +9,7 @@
 #include <memory>
 
 class WindowHandler {
-    static std::unique_ptr<WindowHandler> instance;
+    static WindowHandler wh;
     std::map<std::string, bool> windowCreationStatus;
 
     /* Main Menu */
@@ -237,18 +237,14 @@ class WindowHandler {
 public:
     WindowHandler();
 
-    // Singleton
-    WindowHandler(const WindowHandler&) = delete;
-    WindowHandler& operator=(const WindowHandler&) = delete;
-
     static WindowHandler* getInstance();
-    std::wstring convertToWideString(const std::string& str);
+    std::wstring convertToWideString(std::string str);
 
-    void setWindowCreated(const std::string& windowName, bool isCreated);
-    bool isWindowCreated(const std::string& windowName);
+    void setWindowCreated(std::string windowName, bool isCreated);
+    bool isWindowCreated(std::string windowName);
 
     std::wstring getComboBoxSelectedText(HWND comboBox);
-    void displayError(const std::wstring& message, HWND hWnd);
+    void displayError(std::wstring message, HWND hWnd);
     std::wstring getWindowText(HWND hWnd);
 
     // Login Type
