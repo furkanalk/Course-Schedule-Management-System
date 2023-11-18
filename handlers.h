@@ -14,19 +14,16 @@ class WindowHandler {
 
     /* Main Menu */
     struct LoginType {
-        // Window Handlers
         HWND welcome;
         HWND admin;
         HWND teacher;
         HWND student;
 
-        // Set all windows to NULL by default
         LoginType() : welcome(nullptr), admin(nullptr), teacher(nullptr), student(nullptr) {}
     } loginType;
 
     /* Admin related handlers */
     struct AdminLogin {
-        // Window Handlers
         HWND header;
         HWND username;
         HWND usernameInput;
@@ -35,12 +32,10 @@ class WindowHandler {
         HWND previous;
         HWND proceed;
 
-        // Set all windows to NULL by default
         AdminLogin() : header(nullptr), username(nullptr), usernameInput(nullptr), password(nullptr), passwordInput(nullptr), previous(nullptr), proceed(nullptr) {}
     } adminLogin;
 
     struct AdminInterface {
-        // Window Handlers
         HWND header;
         HWND courseManagement;
         HWND teachers;
@@ -48,12 +43,10 @@ class WindowHandler {
         HWND previous;
         HWND proceed;
 
-        // Set all windows to NULL by default
         AdminInterface() : header(nullptr), courseManagement(nullptr), teachers(nullptr), students(nullptr), previous(nullptr), proceed(nullptr) {}
     } adminInterface;
 
     struct AdminCourseManagement {
-        // Window Handlers
         HWND header;
         HWND syllabus;
         HWND showCourses;
@@ -61,12 +54,10 @@ class WindowHandler {
         HWND previous;
         HWND proceed;
 
-        // Set all windows to NULL by default
         AdminCourseManagement() : header(nullptr), syllabus(nullptr), showCourses(nullptr), addCourse(nullptr), previous(nullptr), proceed(nullptr) {}
     } adminCourseManagement;
 
     struct AdminManageCourse {
-        // Window Handlers
         HWND header;
         HWND courseList;
         HWND fetch;
@@ -79,13 +70,11 @@ class WindowHandler {
         HWND previous;
         HWND update;
 
-        // Set all windows to NULL by default
         AdminManageCourse() : header(nullptr), courseList(nullptr), fetch(nullptr), deleteCourse(nullptr), courseName(nullptr), courseRoomFirst(nullptr), courseRoomSecond(nullptr),
             courseRoomF(nullptr), courseRoomS(nullptr), previous(nullptr), update(nullptr) {}
     } adminManageCourse;
 
     struct AdminAddCourse {
-        // Window Handlers
         HWND header;
         HWND course;
         HWND courseInput;
@@ -94,24 +83,20 @@ class WindowHandler {
         HWND previous;
         HWND insert;
 
-        // Set all windows to NULL by default
         AdminAddCourse() : header(nullptr), course(nullptr), courseInput(nullptr), headerSecond(nullptr), classList(nullptr), previous(nullptr), insert(nullptr) {}
     } adminAddCourse;
 
     struct AdminTeacherManagement {
-        // Window Handlers
         HWND header;
         HWND showTeachers;
         HWND addTeacher;
         HWND previous;
         HWND proceed;
 
-        // Set all windows to NULL by default
         AdminTeacherManagement() : header(nullptr), showTeachers(nullptr), addTeacher(nullptr), previous(nullptr), proceed(nullptr) {}
     } adminTeacherManagement;
 
     struct AdminManageTeacher {
-        // Window Handlers
         HWND header;
         HWND teacherList;
         HWND fetch;
@@ -132,14 +117,12 @@ class WindowHandler {
         HWND previous;
         HWND update;
 
-        // Set all windows to NULL by default
         AdminManageTeacher() : header(nullptr), teacherList(nullptr), fetch(nullptr), deleteTeacher(nullptr), teacherName(nullptr), mondayStatic(nullptr), mondayBool(nullptr),
             tuesdayStatic(nullptr), tuesdayBool(nullptr), wednesdayStatic(nullptr), wednesdayBool(nullptr), thursdayStatic(nullptr), thursdayBool(nullptr), fridayStatic(nullptr), fridayBool(nullptr),
             saturdayStatic(nullptr), saturdayBool(nullptr), previous(nullptr), update(nullptr) {}
     } adminManageTeacher;
 
     struct AdminAddTeacher {
-        // Window Handlers
         HWND header;
         HWND fullname;
         HWND fullnameInput;
@@ -155,25 +138,21 @@ class WindowHandler {
         HWND previous;
         HWND insert;
 
-        // Set all windows to NULL by default
         AdminAddTeacher() : header(nullptr), fullname(nullptr), fullnameInput(nullptr), course(nullptr), courseInput(nullptr), headerSecond(nullptr), monday(nullptr), tuesday(nullptr),
             wednesday(nullptr), thursday(nullptr), friday(nullptr), saturday(nullptr), previous(nullptr), insert(nullptr) {}
     } adminAddTeacher;
 
     struct AdminRoomManagement {
-        // Window Handlers
         HWND header;
         HWND showRooms;
         HWND addRoom;
         HWND previous;
         HWND proceed;
 
-        // Set all windows to NULL by default
         AdminRoomManagement() : header(nullptr), showRooms(nullptr), addRoom(nullptr), previous(nullptr), proceed(nullptr) {}
     } adminRoomManagement;
 
     struct AdminManageRoom {
-        // Window Handlers
         HWND header;
         HWND classList;
         HWND fetch;
@@ -184,12 +163,10 @@ class WindowHandler {
         HWND previous;
         HWND update;
 
-        // Set all windows to NULL by default
         AdminManageRoom() : header(nullptr), classList(nullptr), fetch(nullptr), deleteClass(nullptr), className(nullptr), classFloor(nullptr), classCategory(nullptr), previous(nullptr), update(nullptr) {}
     } adminManageRoom;
 
     struct AdminAddRoom {
-        // Window Handlers
         HWND header;
         HWND name;
         HWND nameInput;
@@ -200,13 +177,11 @@ class WindowHandler {
         HWND previous;
         HWND insert;
 
-        // Set all windows to NULL by default
         AdminAddRoom() : header(nullptr), name(nullptr), nameInput(nullptr), floor(nullptr), floorInput(nullptr), headerSecond(nullptr), category(nullptr), previous(nullptr), insert(nullptr) {}
     } adminAddRoom;
 
     /* Teacher related handlers */
     struct TeacherLogin {
-        // Window Handlers
         HWND header;
         HWND username;
         HWND usernameInput;
@@ -215,13 +190,11 @@ class WindowHandler {
         HWND previous;
         HWND proceed;
 
-        // Set all windows to NULL by default
         TeacherLogin() : header(nullptr), username(nullptr), usernameInput(nullptr), password(nullptr), passwordInput(nullptr), previous(nullptr), proceed(nullptr) {}
     } teacherLogin;
 
     /* Student related handlers */
     struct StudentLogin {
-        // Window Handlers
         HWND header;
         HWND username;
         HWND usernameInput;
@@ -230,7 +203,6 @@ class WindowHandler {
         HWND previous;
         HWND proceed;
 
-        // Set all windows to NULL by default
         StudentLogin() : header(nullptr), username(nullptr), usernameInput(nullptr), password(nullptr), passwordInput(nullptr), previous(nullptr), proceed(nullptr) {}
     } studentLogin;
 

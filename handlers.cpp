@@ -4,9 +4,8 @@
 #include <tchar.h>
 #include <string>
 #include <vector>
-#include <stdexcept>
 #include <algorithm>
-#include <iterator>
+#include <sstream>
 
 WindowHandler WindowHandler::wh;
 
@@ -47,40 +46,26 @@ WindowHandler* WindowHandler::getInstance() {
 
 // Convert to wide string
 std::wstring WindowHandler::convertToWideString(std::string str) {
+    if (str.empty()) return L"";
     int bufferLength = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, NULL, 0);
-
-    if (bufferLength == 0)
-        throw std::runtime_error("Failed to convert string to wide character format.");
-
     std::vector<wchar_t> buffer(bufferLength);
-    int conversionResult = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, buffer.data(), bufferLength);
-
-    if (conversionResult == 0)
-        throw std::runtime_error("Failed to convert string to wide character format.");
-
+    MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, &buffer[0], bufferLength);
     return std::wstring(buffer.begin(), buffer.end() - 1);
 }
 
 std::wstring WindowHandler::getComboBoxSelectedText(HWND comboBox) {
     int selectedIndex = SendMessage(comboBox, CB_GETCURSEL, 0, 0);
     if (selectedIndex < 0) return L"";
-
-    int len = SendMessage(comboBox, CB_GETLBTEXTLEN, selectedIndex, 0);
-    if (len < 0) return L"";
-
-    std::vector<wchar_t> buffer(len + 1);
-    SendMessage(comboBox, CB_GETLBTEXT, selectedIndex, (LPARAM)buffer.data());
-    return std::wstring(buffer.begin(), buffer.end());
+    int length = SendMessage(comboBox, CB_GETLBTEXTLEN, selectedIndex, 0);
+    std::vector<wchar_t> buffer(length + 1);
+    SendMessage(comboBox, CB_GETLBTEXT, selectedIndex, (LPARAM)&buffer[0]);
+    return std::wstring(buffer.begin(), buffer.end() - 1);
 }
-
-//// Error Display
-//void WindowHandler::displayError(const std::wstring& message, HWND hWnd) {
-//    MessageBox(hWnd, message.c_str(), TEXT("Error"), MB_OK | MB_ICONERROR);
-//}
 
 // Get input
 std::wstring WindowHandler::getWindowText(HWND hWnd) {
     int length = GetWindowTextLength(hWnd);
+    if (length == 0) return L"";
     std::vector<wchar_t> buffer(length + 1);
     GetWindowText(hWnd, &buffer[0], length + 1);
     return std::wstring(buffer.begin(), buffer.end() - 1);
@@ -237,8 +222,8 @@ void WindowHandler::createAdminManageCourseWindows(HWND hWnd) {
     adminManageCourse.update = CreateWindow(TEXT("button"), TEXT("Update"), WS_BORDER | WS_CHILD, 400, 480, 80, 30, hWnd, (HMENU)215, NULL, NULL);
     adminManageCourse.previous = CreateWindow(TEXT("button"), TEXT("Back"), WS_BORDER | WS_CHILD, 300, 480, 80, 30, hWnd, (HMENU)216, NULL, NULL);
 
-    SQLiteHandler* sqliteHandler = SQLiteHandler::getInstance();
-    CourseManagement* allCourses = sqliteHandler->getCourses();
+    SQLiteHandler* dbHandler = SQLiteHandler::getInstance();
+    CourseManagement* allCourses = dbHandler->getCourses();
 
     auto ids = allCourses->getIds();
     auto names = allCourses->getNames();
@@ -251,7 +236,7 @@ void WindowHandler::createAdminManageCourseWindows(HWND hWnd) {
         SendMessage(adminManageCourse.courseList, CB_SETITEMDATA, index, (LPARAM)ids[i]);
     }
 
-    RoomManagement* allClassrooms = sqliteHandler->getClassrooms();
+    RoomManagement* allClassrooms = dbHandler->getClassrooms();
 
     auto classroomNames = allClassrooms->getNames();
     SendMessage(adminManageCourse.courseRoomFirst, CB_RESETCONTENT, 0, 0);
@@ -300,8 +285,8 @@ void WindowHandler::createAdminAddCourseWindows(HWND hWnd) {
     adminAddCourse.courseInput = CreateWindow(TEXT("EDIT"), TEXT(""), WS_BORDER | WS_CHILD, 350, 150, 220, 25, hWnd, (HMENU)153, NULL, NULL);
     adminAddCourse.headerSecond = CreateWindow(TEXT("static"), TEXT("Select Classes"), WS_CHILD | ES_CENTER, 320, 250, 160, 40, hWnd, NULL, NULL, NULL);
 
-    SQLiteHandler* sqliteHandler = SQLiteHandler::getInstance();
-    RoomManagement* allClassrooms = sqliteHandler->getClassrooms();
+    SQLiteHandler* dbHandler = SQLiteHandler::getInstance();
+    RoomManagement* allClassrooms = dbHandler->getClassrooms();
 
     adminAddCourse.classList = CreateWindowEx(0, WC_LISTBOX, NULL, WS_CHILD | WS_VISIBLE | WS_VSCROLL | LBS_NOTIFY | LBS_MULTIPLESEL, 200, 300, 400, 100, hWnd, (HMENU)150, GetModuleHandle(NULL), NULL);
 
@@ -399,8 +384,8 @@ void WindowHandler::createAdminManageTeacherWindows(HWND hWnd) {
     adminManageTeacher.update = CreateWindow(TEXT("button"), TEXT("Update"), WS_BORDER | WS_CHILD, 400, 480, 80, 30, hWnd, (HMENU)200, NULL, NULL);
     adminManageTeacher.previous = CreateWindow(TEXT("button"), TEXT("Back"), WS_BORDER | WS_CHILD, 300, 480, 80, 30, hWnd, (HMENU)201, NULL, NULL);
 
-    SQLiteHandler* sqliteHandler = SQLiteHandler::getInstance();
-    TeacherManagement* allTeachers = sqliteHandler->getTeachers();
+    SQLiteHandler* dbHandler = SQLiteHandler::getInstance();
+    TeacherManagement* allTeachers = dbHandler->getTeachers();
 
     auto ids = allTeachers->getIds();
     auto names = allTeachers->getNames();
@@ -573,8 +558,8 @@ void WindowHandler::createAdminManageRoomWindows(HWND hWnd) {
     adminManageRoom.update = CreateWindow(TEXT("button"), TEXT("Update"), WS_BORDER | WS_CHILD, 400, 480, 80, 30, hWnd, (HMENU)183, NULL, NULL);
     adminManageRoom.previous = CreateWindow(TEXT("button"), TEXT("Back"), WS_BORDER | WS_CHILD, 300, 480, 80, 30, hWnd, (HMENU)184, NULL, NULL);
 
-    auto sqliteHandler = SQLiteHandler::getInstance();
-    RoomManagement* allClassrooms = sqliteHandler->getClassrooms();
+    SQLiteHandler* dbHandler = SQLiteHandler::getInstance();
+    RoomManagement* allClassrooms = dbHandler->getClassrooms();
 
     auto ids = allClassrooms->getIds();
     auto names = allClassrooms->getNames();

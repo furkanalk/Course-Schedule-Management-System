@@ -82,24 +82,25 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 // Window Handlers
 
 /* Login Types */
-void HandleLoginTypes(int wmID, HWND hWnd, User& userAdmin, User& userTeacher, User& userStudent) {
+void HandleLoginTypes(int wmID, HWND hWnd, User& userAdmin) {
+    static std::unique_ptr<User> userTeacher = std::make_unique<Teacher>();
+    static std::unique_ptr<User> userStudent = std::make_unique<Student>();
+
     switch (wmID) {
     case 501:
         userAdmin.login(hWnd);
         break;
     case 502:
-        userTeacher.showInterface(hWnd);
+        userTeacher->showInterface(hWnd);
         break;
     case 503:
-        userStudent.showInterface(hWnd);
+        userStudent->showInterface(hWnd);
         break;
     }
 }
 
 /* Admin Windows */
-void HandleAdminLogin(int wmId, HWND hWnd, User& userAdmin, User& userTeacher, User& userStudent, User& user) {
-
-    //static std::unique_ptr<User> gradeMngt = std::make_unique<GradeManagement>();
+void HandleAdminLogin(int wmId, HWND hWnd, User& userAdmin, User& user) {
     static std::unique_ptr<User> roomMngt = std::make_unique<RoomManagement>();
     static std::unique_ptr<User> courseMngt = std::make_unique<CourseManagement>();
     static std::unique_ptr<User> teacherMngt = std::make_unique<TeacherManagement>();
@@ -289,16 +290,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     static HBRUSH hbrBkgnd = CreateSolidBrush(RGB(200, 200, 255));
 
-    static std::unique_ptr<User> user = std::make_unique<User>();
-    static std::unique_ptr<RoomManagement> roomMngmt = std::make_unique<RoomManagement>();
-    static std::unique_ptr<TeacherManagement> teacherMngmt = std::make_unique<TeacherManagement>();
-    static std::unique_ptr<CourseManagement> courseMngmt = std::make_unique<CourseManagement>();
-
+    static User user;
+    static RoomManagement roomMngmt;
+    static TeacherManagement teacherMngmt;
+    static CourseManagement courseMngmt;
     static std::unique_ptr<User> userAdmin = std::make_unique<Admin>();
-    static std::unique_ptr<User> userTeacher = std::make_unique<Teacher>();
-    static std::unique_ptr<User> userStudent = std::make_unique<Student>();
-
-
+    
     switch (message)
     {
     case WM_CTLCOLORSTATIC:
@@ -309,7 +306,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     }
 
     case WM_CREATE:
-        user->showInterface(hWnd);
+        user.showInterface(hWnd);
         break;
 
     case WM_COMMAND:
@@ -366,10 +363,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
 
         if (wmId == 215) { // Update course
-            if (!courseMngmt->updateCourse(hWnd, hCourseComboBox)) { return 0; }
+            if (!courseMngmt.updateCourse(hWnd, hCourseComboBox)) { return 0; }
         }
         if (wmId == 212) { // Delete course
-            if (!courseMngmt->removeCourse(hWnd, hCourseComboBox)) { return 0; }
+            if (!courseMngmt.removeCourse(hWnd, hCourseComboBox)) { return 0; }
         }
 
         // Teacher fetch
@@ -407,11 +404,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
 
         if (wmId == 200) { // Update teacher
-            if (!teacherMngmt->updateTeacher(hWnd, hTeacherComboBox)) { return 0; }
+            if (!teacherMngmt.updateTeacher(hWnd, hTeacherComboBox)) { return 0; }
         }
 
         if (wmId == 192) { // Delete teacher
-            if (!teacherMngmt->removeTeacher(hWnd, hTeacherComboBox)) { return 0; }
+            if (!teacherMngmt.removeTeacher(hWnd, hTeacherComboBox)) { return 0; }
         }
 
         // Classroom fetch
@@ -444,10 +441,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
 
         if (wmId == 183) { // Update classroom
-            if (!roomMngmt->updateRoom(hWnd, hRoomComboBox)) { return 0; }
+            if (!roomMngmt.updateRoom(hWnd, hRoomComboBox)) { return 0; }
         }
         if (wmId == 182) { // Delete classroom
-            if (!roomMngmt->removeRoom(hWnd, hRoomComboBox)) { return 0; }
+            if (!roomMngmt.removeRoom(hWnd, hRoomComboBox)) { return 0; }
         }
 
         if (wmId == IDM_EXIT)
@@ -455,19 +452,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
         // Login Types
         if (wmId >= 500 && wmId < 600)
-            HandleLoginTypes(wmId, hWnd, *userAdmin, *userTeacher, *userStudent);
+            HandleLoginTypes(wmId, hWnd, *userAdmin);
 
         // Admin Windows
         if (wmId >= 100 && wmId < 300)
-            HandleAdminLogin(wmId, hWnd, *userAdmin, *userTeacher, *userStudent, *user);
+            HandleAdminLogin(wmId, hWnd, *userAdmin, user);
 
         // Teacher Windows
         if (wmId >= 300 && wmId < 400)
-            HandleTeacherLogin(wmId, hWnd, *user);
+            HandleTeacherLogin(wmId, hWnd, user);
 
         // Grade Windows
         if (wmId >= 400 && wmId < 500)
-            HandleStudentLogin(wmId, hWnd, *user);
+            HandleStudentLogin(wmId, hWnd, user);
 
         return DefWindowProc(hWnd, message, wParam, lParam);
     }

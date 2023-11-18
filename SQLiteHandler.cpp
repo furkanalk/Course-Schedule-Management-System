@@ -1,11 +1,9 @@
 #include "SQLiteHandler.h"
 #include "course.h"
-#include <stdexcept>
-#include <sstream>
 
 SQLiteHandler SQLiteHandler::dbHandler;
 
-SQLiteHandler::SQLiteHandler() : db(nullptr) {
+SQLiteHandler::SQLiteHandler() {
     int result = sqlite3_open_v2("courseScheduleDB.sqlite", &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
 }
 

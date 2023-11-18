@@ -24,7 +24,7 @@ public:
 	void addId(int id);
 	std::vector<int> getIds();
 
-	void setName(size_t index, std::string newName);
+	void setName(int index, std::string newName);
 	void addName(std::string name);
 	std::vector<std::string> getNames();
 
@@ -64,7 +64,7 @@ class TeacherManagement : public User {
 private:
 	std::vector<std::vector<int>> workdays;
 public:
-	void setWorkdays(size_t index, std::vector<int> isWorkday);
+	void setWorkdays(int index, std::vector<int> isWorkday);
 	void addWorkdays(std::vector<int> weeklyWorkdays);
 	std::vector<std::vector<int>> getWorkdays();
 	
@@ -83,7 +83,7 @@ class CourseManagement : public User {
 private:
 	std::vector<std::vector<std::string>> rooms;
 public:
-	void setRooms(size_t index, std::vector<std::string> rooms);
+	void setRooms(int index, std::vector<std::string> rooms);
 	void addRooms(std::vector<std::string> rooms);
 	std::vector<std::vector<std::string>> getRooms();
 
@@ -103,11 +103,11 @@ private:
 	std::vector<std::string> floors;
 	std::vector<std::string> categories;
 public:
-	void setFloor(size_t index, std::string newFloor);
+	void setFloor(int index, std::string newFloor);
 	void addFloor(std::string floor);
 	std::vector<std::string> getFloors();
 
-	void setCategory(size_t index, std::string newCategory);
+	void setCategory(int index, std::string newCategory);
 	void addCategory(std::string category);
 	std::vector<std::string> getCategories();
 

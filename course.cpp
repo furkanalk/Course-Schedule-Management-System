@@ -28,7 +28,7 @@ std::vector<int> User::getIds() {
 	return ids;
 }
 
-void User::setName(size_t index, std::string newName) {
+void User::setName(int index, std::string newName) {
 	if (index < names.size()) {
 		names[index] = newName;
 	}
@@ -108,7 +108,7 @@ void User::insertToDB(HWND hWnd) {
 	// Will be filled with user data
 }
 
-void CourseManagement::setRooms(size_t index, std::vector<std::string> newRooms) {
+void CourseManagement::setRooms(int index, std::vector<std::string> newRooms) {
 	if (index < rooms.size()) {
 		rooms[index] = newRooms;
 	}
@@ -345,7 +345,7 @@ void CourseManagement::insertToDB(HWND hWnd) {
 	}
 }
 
-void TeacherManagement::setWorkdays(size_t index, std::vector<int> isWorkday) {
+void TeacherManagement::setWorkdays(int index, std::vector<int> isWorkday) {
 	if (index < workdays.size()) {
 		workdays[index] = isWorkday;
 	}
@@ -589,7 +589,7 @@ bool TeacherManagement::removeTeacher(HWND hWnd, HWND hComboBox) {
 	return true;
 }
 
-void RoomManagement::setFloor(size_t index, std::string newFloor) {
+void RoomManagement::setFloor(int index, std::string newFloor) {
 	if (index < floors.size()) {
 		floors[index] = newFloor;
 	}
@@ -601,7 +601,7 @@ std::vector<std::string> RoomManagement::getFloors() {
 	return floors;
 }
 
-void RoomManagement::setCategory(size_t index, std::string newCategory) {
+void RoomManagement::setCategory(int index, std::string newCategory) {
 	if (index < categories.size()) {
 		categories[index] = newCategory;
 	}
