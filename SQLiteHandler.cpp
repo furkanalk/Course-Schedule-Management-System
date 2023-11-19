@@ -4,7 +4,7 @@
 SQLiteHandler SQLiteHandler::dbHandler;
 
 SQLiteHandler::SQLiteHandler() {
-    int result = sqlite3_open_v2("courseScheduleDB.sqlite", &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+    sqlite3_open_v2("courseScheduleDB.sqlite", &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
 }
 
 SQLiteHandler::~SQLiteHandler() {
@@ -301,10 +301,10 @@ RoomManagement* SQLiteHandler::getClassrooms() {
 
 // Insert Classroom into DB
 bool SQLiteHandler::insert(RoomManagement& room) {
-    std::string sqlInsertRoom = "INSERT INTO classroom (name, floor, category) VALUES (?, ?, ?);";
+    std::string query = "INSERT INTO classroom (name, floor, category) VALUES (?, ?, ?);";
     sqlite3_stmt* stmt;
 
-    if (sqlite3_prepare_v2(db, sqlInsertRoom.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+    if (sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
         sqlite3_finalize(stmt);
         return false;
     }

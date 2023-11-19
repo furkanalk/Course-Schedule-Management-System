@@ -1,3 +1,6 @@
+/* Git Repo */
+/* https://github.com/furkanalk/course-schedule-management.git */
+
 #include "framework.h"
 #include "course.h"
 #include "SQLiteHandler.h"

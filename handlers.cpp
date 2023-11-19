@@ -23,17 +23,12 @@ WindowHandler::WindowHandler() {
     windowCreationStatus["studentLogin"] = false;
 }
 
-// Set window to created
-void WindowHandler::setWindowCreated(std::string windowName, bool isCreated) {
-    windowCreationStatus[windowName] = isCreated;
-}
-
 // Check if the window is already created
 bool WindowHandler::isWindowCreated(std::string windowName) {
     if (windowCreationStatus.find(windowName) != windowCreationStatus.end())
         return windowCreationStatus[windowName];
     else
-        return false;
+        MessageBox(NULL, L"Window does not exist", L"Error", MB_ICONERROR | MB_OK);
 }
 
 WindowHandler* WindowHandler::getInstance() {

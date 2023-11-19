@@ -210,8 +210,6 @@ public:
 
     static WindowHandler* getInstance();
     std::wstring convertToWideString(std::string str);
-
-    void setWindowCreated(std::string windowName, bool isCreated);
     bool isWindowCreated(std::string windowName);
 
     std::wstring getComboBoxSelectedText(HWND comboBox);
