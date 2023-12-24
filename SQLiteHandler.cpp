@@ -1,5 +1,4 @@
 #include "SQLiteHandler.h"
-#include "course.h"
 
 SQLiteHandler SQLiteHandler::dbHandler;
 
@@ -155,6 +154,47 @@ TeacherManagement* SQLiteHandler::getTeachers() {
     return &teacherData;
 }
 
+TeacherManagement* SQLiteHandler::getTeacherByName(const std::string& teacherName) {
+    std::string query = "SELECT id, fullname, monday, tuesday, wednesday, thursday, friday, saturday FROM teacher WHERE fullname = ?;";
+    sqlite3_stmt* stmt;
+    int check;
+
+    // Prepare the SQL query
+    if (sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+        sqlite3_finalize(stmt);
+        return nullptr; // Return nullptr if preparation fails
+    }
+
+    // Bind the teacher's name to the query
+    if (sqlite3_bind_text(stmt, 1, teacherName.c_str(), -1, SQLITE_STATIC) != SQLITE_OK) {
+        sqlite3_finalize(stmt);
+        return nullptr; // Return nullptr if binding fails
+    }
+
+    TeacherManagement* teacherData = new TeacherManagement();
+
+    // Execute the query and populate the TeacherManagement object
+    if ((check = sqlite3_step(stmt)) == SQLITE_ROW) {
+        teacherData->addId(sqlite3_column_int(stmt, 0));
+        teacherData->addName(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1))));
+
+        std::vector<int> weeklyWorkdays;
+        for (int i = 2; i <= 7; i++) {
+            weeklyWorkdays.push_back(sqlite3_column_int(stmt, i) > 0);
+        }
+        teacherData->addWorkdays(weeklyWorkdays);
+    }
+    else {
+        // Clean up and handle the case where the teacher is not found
+        delete teacherData;
+        teacherData = nullptr;
+    }
+
+    // Finalize the statement and return the result
+    sqlite3_finalize(stmt);
+    return teacherData; // Returns a pointer to the TeacherManagement object, or nullptr if not found
+}
+
 // Insert Course into DB
 bool SQLiteHandler::insert(CourseManagement& courseData) {
     std::string query = "INSERT INTO course (name, firstRoom, secondRoom) VALUES (?, ?, ?);";
@@ -297,6 +337,25 @@ RoomManagement* SQLiteHandler::getClassrooms() {
 
     sqlite3_finalize(stmt);
     return &classroomData;
+}
+
+int SQLiteHandler::getRoomCount() {
+    std::string query = "SELECT COUNT(*) FROM room";
+    sqlite3_stmt* stmt;
+    int check;
+
+    if (check = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+        sqlite3_finalize(stmt);
+    }
+
+    int count = 0;
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        count = sqlite3_column_int(stmt, 0);
+    }
+    else {
+        sqlite3_finalize(stmt);
+    }
+    return count;
 }
 
 // Insert Classroom into DB

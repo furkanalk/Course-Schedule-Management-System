@@ -1,5 +1,5 @@
 ﻿#include "handlers.h"
-#include "course.h"
+#include "user.h"
 #include "SQLiteHandler.h"
 #include <tchar.h>
 
@@ -38,9 +38,9 @@ WindowHandler* WindowHandler::getInstance() {
 // Convert to wide string
 std::wstring WindowHandler::convertToWideString(std::string str) {
     if (str.empty()) return L"";
-    int bufferLength = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, NULL, 0);
+    int bufferLength = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, 0, 0);
     std::vector<wchar_t> buffer(bufferLength);
-    MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, &buffer[0], bufferLength);
+    MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, buffer.data(), bufferLength);
     return std::wstring(buffer.begin(), buffer.end() - 1);
 }
 
@@ -50,7 +50,7 @@ std::wstring WindowHandler::getComboBoxSelectedText(HWND comboBox) {
     if (selectedIndex < 0) return L"";
     int length = SendMessage(comboBox, CB_GETLBTEXTLEN, selectedIndex, 0);
     std::vector<wchar_t> buffer(length + 1);
-    SendMessage(comboBox, CB_GETLBTEXT, selectedIndex, (LPARAM)&buffer[0]);
+    SendMessage(comboBox, CB_GETLBTEXT, selectedIndex, (LPARAM)buffer.data());
     return std::wstring(buffer.begin(), buffer.end() - 1);
 }
 
@@ -59,7 +59,7 @@ std::wstring WindowHandler::getWindowText(HWND hWnd) {
     int length = GetWindowTextLength(hWnd);
     if (length == 0) return L"";
     std::vector<wchar_t> buffer(length + 1);
-    GetWindowText(hWnd, &buffer[0], length + 1);
+    GetWindowText(hWnd, buffer.data(), length + 1);
     return std::wstring(buffer.begin(), buffer.end() - 1);
 }
 

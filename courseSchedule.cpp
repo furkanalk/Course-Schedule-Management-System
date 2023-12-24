@@ -2,8 +2,12 @@
 /* https://github.com/furkanalk/course-schedule-management.git */
 
 #include "framework.h"
-#include "course.h"
+#include "user.h"
+#include "TeacherManagement.h"
+#include "RoomManagement.h"
+#include "CourseManagement.h"
 #include "SQLiteHandler.h"
+#include "schedule.h"
 #include "resource.h"
 #include "handlers.h"
 #include "windows.h"
@@ -88,10 +92,28 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 void HandleLoginTypes(int wmID, HWND hWnd, User& userAdmin) {
     static std::unique_ptr<User> userTeacher = std::make_unique<Teacher>();
     static std::unique_ptr<User> userStudent = std::make_unique<Student>();
+    SchoolScheduler schoolScheduler;
+    CourseSchedulerGA scheduler(50, 0.05, 0.8, &schoolScheduler);
+    Chromosome bestSchedule;
 
     switch (wmID) {
     case 501:
-        userAdmin.login(hWnd);
+        //userAdmin.login(hWnd);
+        bestSchedule = scheduler.run();
+
+        // Iterate through each gene in the chromosome to output the schedule
+        for (const auto& gene : bestSchedule.genes) {
+            std::wstring debugMessage =
+                L"Course ID: " + std::to_wstring(gene.courseId) +
+                L", Teacher Name: " + std::wstring(gene.teacherName.begin(), gene.teacherName.end()) +
+                L", Room ID: " + std::to_wstring(gene.roomId) +
+                L", Time Slot: " + std::to_wstring(gene.timeSlot) +
+                L", Day: " + std::wstring(gene.day.begin(), gene.day.end()) + L"\n";
+
+            OutputDebugString(debugMessage.c_str());
+        }
+
+
         break;
     case 502:
         userTeacher->showInterface(hWnd);
@@ -327,14 +349,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             int selectedCount = SendMessage(hListBox, LB_GETSELCOUNT, 0, 0);
 
             if (selectedCount > 2)
-                MessageBox(hWnd, L"Only two selections are allowed.", L"Selection Limit", MB_ICONWARNING | MB_OK);
+                MessageBox(hWnd, L"Only two selections are allowed.", L"Error", MB_ICONWARNING | MB_OK);
         }
   
         if (wmId == 211) { // Course fetch
             HWND hCourseComboBox = GetDlgItem(hWnd, 210);
             int idx = SendMessage(hCourseComboBox, CB_GETCURSEL, 0, 0);
             if (idx == CB_ERR) {
-                MessageBox(hWnd, L"Please make a selection.", L"Selection Error", MB_ICONWARNING | MB_OK);
+                MessageBox(hWnd, L"Please make a selection.", L"Error", MB_ICONWARNING | MB_OK);
                 return 0;
             }
 
@@ -378,7 +400,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             int idx = (int)SendMessage(hTeacherComboBox, CB_GETCURSEL, 0, 0);
 
             if (idx == CB_ERR) {
-                MessageBox(hWnd, L"Please make a selection.", L"Selection Error", MB_ICONWARNING | MB_OK);
+                MessageBox(hWnd, L"Please make a selection.", L"Error", MB_ICONWARNING | MB_OK);
                 break;
             }
 
@@ -418,7 +440,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         if (wmId == 181) {
             int idx = (int)SendMessage(hRoomComboBox, CB_GETCURSEL, 0, 0);
             if (idx == CB_ERR) {
-                MessageBox(hWnd, L"Please make a selection.", L"Selection Error", MB_ICONWARNING | MB_OK);
+                MessageBox(hWnd, L"Please make a selection.", L"Error", MB_ICONWARNING | MB_OK);
                 break;
             }
 
