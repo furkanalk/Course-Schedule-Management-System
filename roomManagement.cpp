@@ -100,7 +100,7 @@ void RoomManagement::insertToDB(HWND hWnd) {
 
 	SQLiteHandler* dbHandler = SQLiteHandler::getInstance();
 
-	if (dbHandler->insert(roomData)) {
+	if (*dbHandler += roomData) {
 		MessageBox(hWnd, TEXT("Room inserted successfully!"), TEXT("Success"), MB_OK | MB_ICONINFORMATION);
 	}
 	else {
@@ -189,7 +189,7 @@ bool RoomManagement::removeRoom(HWND hWnd, HWND hComboBox) {
 
 	updatedClassrooms->setCurrentId(roomId);
 
-	if (!dbHandler->deleteData(*updatedClassrooms)) {
+	if (!(*dbHandler -= *updatedClassrooms)) {
 		MessageBox(hWnd, L"Failed to delete the classroom.", L"Error", MB_ICONERROR | MB_OK);
 		return false;
 	}

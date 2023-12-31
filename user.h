@@ -34,29 +34,4 @@ public:
 	virtual void manageData(HWND hWnd);
 };
 
-// User Types
-class Teacher : public User {
-public:
-	// Override functions
-	void showInterface(HWND hWnd) override;
-	/*void getData(HWND hWnd) override;
-	void readFromDB(HWND hWnd) override;*/
-};
-
-class Student : public User {
-public:
-	// Override functions
-	void showInterface(HWND hWnd) override;
-	/*void getData(HWND hWnd) override;
-	void readFromDB(HWND hWnd) override;*/
-};
-
-class Admin : public User {
-public:
-	// Override functions
-	void showInterface(HWND hWnd) override;
-	/*void getData(HWND hWnd) override;
-	void readFromDB(HWND hWnd) override;*/
-};
-
 #endif

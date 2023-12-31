@@ -17,6 +17,8 @@ public:
 	void addData(HWND hWnd) override;
 	void insertToDB(HWND hWnd) override;
 
+	void createCourseScheduling(HWND hWnd);
+
 	bool updateCourse(HWND hWnd, HWND hComboBox);
 	bool removeCourse(HWND hWnd, HWND hComboBox);
 };

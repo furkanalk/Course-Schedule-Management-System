@@ -45,6 +45,26 @@ class WindowHandler {
         AdminInterface() : header(nullptr), courseManagement(nullptr), teachers(nullptr), students(nullptr), previous(nullptr), proceed(nullptr) {}
     } adminInterface;
 
+    struct AdminCourseScheduling {
+        HWND header;
+        HWND mondayHeader;
+        HWND monday;
+        HWND tuesdayHeader;
+        HWND tuesday;
+        HWND wednesdayHeader;
+        HWND wednesday;
+        HWND thursdayHeader;
+        HWND thursday;
+        HWND fridayHeader;
+        HWND friday;
+        HWND saturdayHeader;
+        HWND saturday;
+        HWND previous;
+
+        AdminCourseScheduling() : header(nullptr), monday(nullptr), tuesday(nullptr), wednesday(nullptr), thursday(nullptr), friday(nullptr), saturday(nullptr),
+            mondayHeader(nullptr), tuesdayHeader(nullptr), wednesdayHeader(nullptr), thursdayHeader(nullptr), fridayHeader(nullptr), saturdayHeader(nullptr), previous(nullptr) {}
+    } adminCourseScheduling;
+
     struct AdminCourseManagement {
         HWND header;
         HWND syllabus;
@@ -226,6 +246,10 @@ public:
     // Admin Interface
     void createAdminInterfaceWindows(HWND hWnd);
     void setAdminInterfaceVisible(bool isVisible = true);
+
+    // Admin Create Course Scheduling
+    void createAdminCourseSchedulingWindows(HWND hWnd);
+    void setAdminCourseSchedulingVisible(bool isVisible = true);
 
     // Admin Course Management
     void createAdminCourseManagementWindows(HWND hWnd);

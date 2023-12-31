@@ -12,6 +12,7 @@
 #include "handlers.h"
 #include "windows.h"
 #include <memory>
+#include <fstream>
 
 #define MAX_LOADSTRING 100
 
@@ -89,56 +90,41 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 // Window Handlers
 
 /* Login Types */
-void HandleLoginTypes(int wmID, HWND hWnd, User& userAdmin) {
-    static std::unique_ptr<User> userTeacher = std::make_unique<Teacher>();
-    static std::unique_ptr<User> userStudent = std::make_unique<Student>();
-    SchoolScheduler schoolScheduler;
-    CourseSchedulerGA scheduler(50, 0.05, 0.8, &schoolScheduler);
-    Chromosome bestSchedule;
-
-    switch (wmID) {
-    case 501:
-        //userAdmin.login(hWnd);
-        bestSchedule = scheduler.run();
-
-        // Iterate through each gene in the chromosome to output the schedule
-        for (const auto& gene : bestSchedule.genes) {
-            std::wstring debugMessage =
-                L"Course ID: " + std::to_wstring(gene.courseId) +
-                L", Teacher Name: " + std::wstring(gene.teacherName.begin(), gene.teacherName.end()) +
-                L", Room ID: " + std::to_wstring(gene.roomId) +
-                L", Time Slot: " + std::to_wstring(gene.timeSlot) +
-                L", Day: " + std::wstring(gene.day.begin(), gene.day.end()) + L"\n";
-
-            OutputDebugString(debugMessage.c_str());
-        }
-
-
-        break;
-    case 502:
-        userTeacher->showInterface(hWnd);
-        break;
-    case 503:
-        userStudent->showInterface(hWnd);
-        break;
-    }
+void HandleLoginTypes(int wmID, HWND hWnd, User& user) {
+    if(wmID == 501) user.login(hWnd);
 }
 
 /* Admin Windows */
-void HandleAdminLogin(int wmId, HWND hWnd, User& userAdmin, User& user) {
-    static std::unique_ptr<User> roomMngt = std::make_unique<RoomManagement>();
-    static std::unique_ptr<User> courseMngt = std::make_unique<CourseManagement>();
-    static std::unique_ptr<User> teacherMngt = std::make_unique<TeacherManagement>();
+void HandleAdminLogin(int wmId, HWND hWnd, User& user, CourseManagement& courseMngmt) {
+    std::unique_ptr<User> roomMngt = std::make_unique<RoomManagement>();
+    std::unique_ptr<User> courseMngt = std::make_unique<CourseManagement>();
+    std::unique_ptr<User> teacherMngt = std::make_unique<TeacherManagement>();
+
+    if (wmId == 121) {
+        SchoolScheduler schoolScheduler;
+        CourseSchedulerGA scheduler(50, 0.05, 0.8, &schoolScheduler);
+        Chromosome bestSchedule;
+
+        bestSchedule = scheduler.run();
+
+        std::string filename = "schedules.txt";
+        std::ofstream file(filename);
+
+        for (auto gene : bestSchedule.genes) {
+            file << "Course: " << gene.courseName <<
+                ", Teacher: " << gene.teacherName <<
+                ", Room: " << gene.roomName <<
+                ", Time: " << gene.timeSlot <<
+                ", Day: " << gene.day << std::endl;
+        }
+        courseMngmt.createCourseScheduling(hWnd);
+    }
 
     switch (wmId) {
         /* Admin Login */
-    case 101:
-        // back to Login Types from Admin Login Panel (back)
-        user.showInterface(hWnd);
-        break;
     case 102:
         // go to Admin Interface from Admin Login Panel (login)
-        userAdmin.showInterface(hWnd);
+        user.showInterface(hWnd);
         break;
 
         /* Admin Interface */
@@ -170,13 +156,17 @@ void HandleAdminLogin(int wmId, HWND hWnd, User& userAdmin, User& user) {
         break;
     case 124:
         // back to Admin Interface from Course Management (back)
-        userAdmin.showInterface(hWnd);
+        user.showInterface(hWnd);
         break;
     case 125:
         // back to Login Types from Course Management (exit)
         user.showInterface(hWnd);
         break;
 
+        /* Create Syllabus */
+    case 226:
+        user.showInterface(hWnd);
+        break;
         /* Courses Manage Course */
     case 216:
         // back to Course Management from Manage Course (back)
@@ -203,7 +193,7 @@ void HandleAdminLogin(int wmId, HWND hWnd, User& userAdmin, User& user) {
         break;
     case 133:
         // back to Teacher Management from Teacher Add (back)
-        userAdmin.showInterface(hWnd);
+        user.showInterface(hWnd);
         break;
     case 134:
         // back to Login Types from Teacher Management (exit)
@@ -237,7 +227,7 @@ void HandleAdminLogin(int wmId, HWND hWnd, User& userAdmin, User& user) {
         break;
     case 163:
         // back to Admin Interface from Room Management (back)
-        userAdmin.showInterface(hWnd);
+        user.showInterface(hWnd);
         break;
     case 164:
         // back to Login Types from Room Management (exit)
@@ -313,13 +303,12 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    static HBRUSH hbrBkgnd = CreateSolidBrush(RGB(200, 200, 255));
+    HBRUSH hbrBkgnd = CreateSolidBrush(RGB(200, 200, 255));
 
-    static User user;
-    static RoomManagement roomMngmt;
-    static TeacherManagement teacherMngmt;
-    static CourseManagement courseMngmt;
-    static std::unique_ptr<User> userAdmin = std::make_unique<Admin>();
+    User user;
+    RoomManagement roomMngmt;
+    TeacherManagement teacherMngmt;
+    CourseManagement courseMngmt;
     
     switch (message)
     {
@@ -477,11 +466,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
         // Login Types
         if (wmId >= 500 && wmId < 600)
-            HandleLoginTypes(wmId, hWnd, *userAdmin);
+            HandleLoginTypes(wmId, hWnd, user);
 
         // Admin Windows
         if (wmId >= 100 && wmId < 300)
-            HandleAdminLogin(wmId, hWnd, *userAdmin, user);
+            HandleAdminLogin(wmId, hWnd, user, courseMngmt);
 
         // Teacher Windows
         if (wmId >= 300 && wmId < 400)

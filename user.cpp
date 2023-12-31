@@ -45,21 +45,18 @@ std::vector<std::string> User::getNames() {
 void User::showInterface(HWND hWnd) {
 	WindowHandler* wh = WindowHandler::getInstance();
 
-	/* Hide other windows */
-	// Login Types
+	// Hide other Admin windows
 	wh->setAdminLoginVisible(false);
-	wh->setTeacherLoginVisible(false);
-	wh->setStudentLoginVisible(false);
-	// Admin
-	wh->setAdminInterfaceVisible(false);
 	wh->setAdminCourseManagementVisible(false);
 	wh->setAdminTeacherManagementVisible(false);
+	wh->setAdminRoomManagementVisible(false);
+	wh->setAdminCourseSchedulingVisible(false);
 
-	// Show Login Type	
-	if (!wh->isWindowCreated("loginType")) {
-		wh->createLoginTypeWindows(hWnd);
+	// Show Admin Inferface
+	if (!wh->isWindowCreated("adminInterface")) {
+		wh->createAdminInterfaceWindows(hWnd);
 	}
-	wh->setLoginTypeVisible();
+	wh->setAdminInterfaceVisible();
 }
 
 void User::manageData(HWND hWnd) {
@@ -82,55 +79,10 @@ void User::login(HWND hWnd) {
 	wh->setAdminLoginVisible();
 }
 
-/* Admin interface Wnd */
-void Admin::showInterface(HWND hWnd) {
-	WindowHandler* wh = WindowHandler::getInstance();
-
-	// Hide other Admin windows
-	wh->setAdminLoginVisible(false);
-	wh->setAdminCourseManagementVisible(false);
-	wh->setAdminTeacherManagementVisible(false);
-	wh->setAdminRoomManagementVisible(false);
-
-	// Show Admin Inferface
-	if (!wh->isWindowCreated("adminInterface")) {
-		wh->createAdminInterfaceWindows(hWnd);
-	}
-	wh->setAdminInterfaceVisible();
-}
-
 void User::addData(HWND hWnd) {
 	// Will be filled with user data
 }
 
 void User::insertToDB(HWND hWnd) {
 	// Will be filled with user data
-}
-
-/* Teacher interface Wnd */
-void Teacher::showInterface(HWND hWnd) {
-	WindowHandler* wh = WindowHandler::getInstance();
-
-	// Hide Login Type
-	wh->setLoginTypeVisible(false);
-
-	// Show Teacher Login
-	if (!wh->isWindowCreated("teacherLogin")) {
-		wh->createTeacherLoginWindows(hWnd);
-	}
-	wh->setTeacherLoginVisible();
-}
-
-/* Student interface Wnd */
-void Student::showInterface(HWND hWnd) {
-	WindowHandler* wh = WindowHandler::getInstance();
-
-	// Hide Login Type
-	wh->setLoginTypeVisible(false);
-
-	// Show Student Login
-	if (!wh->isWindowCreated("studentLogin")) {
-		wh->createStudentLoginWindows(hWnd);
-	}
-	wh->setStudentLoginVisible();
 }

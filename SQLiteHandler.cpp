@@ -1,4 +1,5 @@
 #include "SQLiteHandler.h"
+#include <algorithm>
 
 SQLiteHandler SQLiteHandler::dbHandler;
 
@@ -14,8 +15,8 @@ SQLiteHandler* SQLiteHandler::getInstance() {
     return &dbHandler;
 }
 
-// Insert Teacher into DB
-bool SQLiteHandler::insert(TeacherManagement& teacher) {
+// Teachers
+bool SQLiteHandler::operator+=(TeacherManagement& teacher) {
     std::string query = "INSERT INTO teacher (fullname, course, monday, tuesday, wednesday, thursday, friday, saturday) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
     sqlite3_stmt* stmt;
 
@@ -58,6 +59,7 @@ bool SQLiteHandler::insert(TeacherManagement& teacher) {
     sqlite3_finalize(stmt);
     return true;
 }
+
 
 // Update teacher
 bool SQLiteHandler::update(TeacherManagement& updatedTeacher) {
@@ -104,8 +106,7 @@ bool SQLiteHandler::update(TeacherManagement& updatedTeacher) {
     return true;
 }
 
-// Delete teacher from DB
-bool SQLiteHandler::deleteData(TeacherManagement& teacher) {
+bool SQLiteHandler::operator-=(TeacherManagement& teacher) {
     std::string query = "DELETE FROM teacher WHERE id = ?;";
     sqlite3_stmt* stmt;
 
@@ -154,26 +155,21 @@ TeacherManagement* SQLiteHandler::getTeachers() {
     return &teacherData;
 }
 
-TeacherManagement* SQLiteHandler::getTeacherByName(const std::string& teacherName) {
+TeacherManagement* SQLiteHandler::getTeacherByName(std::string teacherName) {
     std::string query = "SELECT id, fullname, monday, tuesday, wednesday, thursday, friday, saturday FROM teacher WHERE fullname = ?;";
     sqlite3_stmt* stmt;
     int check;
 
-    // Prepare the SQL query
     if (sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
         sqlite3_finalize(stmt);
-        return nullptr; // Return nullptr if preparation fails
     }
 
-    // Bind the teacher's name to the query
     if (sqlite3_bind_text(stmt, 1, teacherName.c_str(), -1, SQLITE_STATIC) != SQLITE_OK) {
         sqlite3_finalize(stmt);
-        return nullptr; // Return nullptr if binding fails
     }
 
     TeacherManagement* teacherData = new TeacherManagement();
 
-    // Execute the query and populate the TeacherManagement object
     if ((check = sqlite3_step(stmt)) == SQLITE_ROW) {
         teacherData->addId(sqlite3_column_int(stmt, 0));
         teacherData->addName(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1))));
@@ -184,19 +180,13 @@ TeacherManagement* SQLiteHandler::getTeacherByName(const std::string& teacherNam
         }
         teacherData->addWorkdays(weeklyWorkdays);
     }
-    else {
-        // Clean up and handle the case where the teacher is not found
-        delete teacherData;
-        teacherData = nullptr;
-    }
 
-    // Finalize the statement and return the result
     sqlite3_finalize(stmt);
-    return teacherData; // Returns a pointer to the TeacherManagement object, or nullptr if not found
+    return teacherData;
 }
 
 // Insert Course into DB
-bool SQLiteHandler::insert(CourseManagement& courseData) {
+bool SQLiteHandler::operator+=(CourseManagement& courseData) {
     std::string query = "INSERT INTO course (name, firstRoom, secondRoom) VALUES (?, ?, ?);";
     sqlite3_stmt* stmt;
 
@@ -265,9 +255,8 @@ bool SQLiteHandler::update(CourseManagement& updatedCourse) {
     return true;
 }
 
-
 // Delete course
-bool SQLiteHandler::deleteData(CourseManagement& courses) {
+bool SQLiteHandler::operator-=(CourseManagement& courses) {
     std::string query = "DELETE FROM course WHERE id = ?;";
     sqlite3_stmt* stmt;
 
@@ -359,7 +348,7 @@ int SQLiteHandler::getRoomCount() {
 }
 
 // Insert Classroom into DB
-bool SQLiteHandler::insert(RoomManagement& room) {
+bool SQLiteHandler::operator+=(RoomManagement& room) {
     std::string query = "INSERT INTO classroom (name, floor, category) VALUES (?, ?, ?);";
     sqlite3_stmt* stmt;
 
@@ -384,7 +373,7 @@ bool SQLiteHandler::insert(RoomManagement& room) {
         sqlite3_finalize(stmt);
         return false;
     }
-        
+
     sqlite3_finalize(stmt);
     return true;
 }
@@ -420,9 +409,8 @@ bool SQLiteHandler::update(RoomManagement& updatedClassroom) {
     return true;
 }
 
-
 // Delete Classroom
-bool SQLiteHandler::deleteData(RoomManagement& room) {
+bool SQLiteHandler::operator-=(RoomManagement& room) {
     std::string query = "DELETE FROM classroom WHERE id = ?;";
     sqlite3_stmt* stmt;
 
@@ -442,4 +430,38 @@ bool SQLiteHandler::deleteData(RoomManagement& room) {
 
     sqlite3_finalize(stmt);
     return true;
+}
+
+// get Teacher by Course
+std::string SQLiteHandler::getTeacherByCourseName(std::string courseName) {
+    std::string query = "SELECT fullname, monday, tuesday, wednesday, thursday, friday, saturday FROM teacher WHERE course = ?;";
+    sqlite3_stmt* stmt;
+    std::string fullName;
+    if (sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+        sqlite3_bind_text(stmt, 1, courseName.c_str(), -1, SQLITE_STATIC);
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            fullName = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+        }
+        sqlite3_finalize(stmt);
+    }
+    return fullName;
+}
+
+
+int SQLiteHandler::getRoomIdByName(std::string roomName) {
+    std::string query = "SELECT id FROM classroom WHERE name = ?;";
+    sqlite3_stmt* stmt;
+    int roomId = -1;
+
+    if (sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+        sqlite3_bind_text(stmt, 1, roomName.c_str(), -1, SQLITE_STATIC);
+
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            roomId = sqlite3_column_int(stmt, 0);
+        }
+
+        sqlite3_finalize(stmt);
+    }
+
+    return roomId;
 }

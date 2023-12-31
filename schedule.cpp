@@ -1,205 +1,206 @@
 #include "schedule.h"
+#include <sstream>
+#include <string> 
 
+bool SchoolScheduler::isTimeSlotAvailable(std::string day, int timeSlot) {
+    return occupiedTimeSlots[day].find(timeSlot) == occupiedTimeSlots[day].end();
+}
 
-void SchoolScheduler::addClassToTeacherSchedule(const std::string& teacherName, const std::string& day, int timeSlot) {
-    std::map<std::string, int> dayIndex = { {"monday", 0}, {"tuesday", 1}, {"wednesday", 2},
-                                           {"thursday", 3}, {"friday", 4}, {"saturday", 5} };
+void SchoolScheduler::reserveTimeSlot(std::string day, int timeSlot) {
+    occupiedTimeSlots[day].insert(timeSlot);
+}
+
+void SchoolScheduler::addClassToTeacherSchedule(std::string teacherName, std::string day, int timeSlot) {
     TeacherSchedule newClass = { teacherName, day, timeSlot };
     teacherSchedules[dayIndex[day]].push_back(newClass);
 }
 
-bool SchoolScheduler::isTeacherAvailable(const std::string& teacherName, const std::string& day, int timeSlot) {
+bool isTeacherAvailable(SchoolScheduler& scheduler, std::string teacherName, std::string day, int timeSlot) {
     SQLiteHandler* dbHandler = SQLiteHandler::getInstance();
     TeacherManagement* teacher = dbHandler->getTeacherByName(teacherName);
 
-    if (!teacher) {
-        return false; // Teacher not found
+    int dayIdx = scheduler.dayIndex[day];
+
+    if (dayIdx < 0 || dayIdx >= scheduler.teacherSchedules.size())
+        return true;
+
+    for (auto scheduledClass : scheduler.teacherSchedules[dayIdx]) {
+        if (scheduledClass.teacherName == teacherName && scheduledClass.timeSlot == timeSlot)
+            return false;
     }
-
-    std::map<std::string, int> dayToIndex = { {"monday", 0}, {"tuesday", 1}, {"wednesday", 2},
-                                             {"thursday", 3}, {"friday", 4}, {"saturday", 5} };
-    int dayIdx = dayToIndex[day];
-
-    if (dayIdx < 0 || dayIdx >= teacherSchedules.size()) {
-        return true; // Day index out of bounds, assuming teacher is available
-    }
-
-    if (!teacher->getWorkdays()[dayIdx][timeSlot]) {
-        return false; // Teacher not working at this timeslot
-    }
-
-    for (const auto& scheduledClass : teacherSchedules[dayIdx]) {
-        if (scheduledClass.teacherName == teacherName && scheduledClass.timeSlot == timeSlot) {
-            return false; // Teacher already has a class at this timeslot
-        }
-    }
-
-    return true; // Teacher is available
+    return true;
 }
 
 
-bool SchoolScheduler::isRoomAvailable(int roomId, const std::string& day, int timeSlot) {
-    std::map<std::string, int> dayIndex = { {"monday", 0}, {"tuesday", 1}, {"wednesday", 2},
-                                           {"thursday", 3}, {"friday", 4}, {"saturday", 5} };
+bool isRoomAvailable(SchoolScheduler& scheduler, int roomId, std::string day, int timeSlot) {
+    if (scheduler.dayIndex.find(day) == scheduler.dayIndex.end())
+        return true;
 
-    // Ensure the day is a valid key in the map
-    if (dayIndex.find(day) == dayIndex.end()) {
-        return true; // Day not found, assume room is available
-    }
+    int dayIdx = scheduler.dayIndex[day];
 
-    int dayIdx = dayIndex[day];
-
-    // Check if dayIdx is within the valid range of the vector
-    if (dayIdx >= 0 && dayIdx < weekSchedule.size()) {
-        // Iterate over the scheduled classes for the given day
-        for (const auto& scheduledClass : weekSchedule[dayIdx]) {
-            if (scheduledClass.roomId == roomId && scheduledClass.timeSlot == timeSlot) {
-                return false; // Room is not available
-            }
+    if (dayIdx >= 0 && dayIdx < scheduler.weekSchedule.size()) {
+        for (auto scheduledClass : scheduler.weekSchedule[dayIdx]) {
+            if (scheduledClass.timeSlot == timeSlot)
+                return false;
         }
     }
-
-    return true; // Room is available
+    return true;
 }
-
 
 void SchoolScheduler::initializeWeekSchedule() {
-    for (auto& day : weekSchedule) {
+    for (auto day : weekSchedule)
         day.clear();
-    }
 }
 
-void SchoolScheduler::scheduleClass(int courseId, const std::string& teacherName, int roomId, int timeSlot, const std::string& day) {
-    // A map to convert day names to indices
-    std::map<std::string, int> dayIndex = { {"monday", 0}, {"tuesday", 1}, {"wednesday", 2},
-                                           {"thursday", 3}, {"friday", 4}, {"saturday", 5} };
+void SchoolScheduler::scheduleClass(int courseId, std::string teacherName, int roomId, int timeSlot, std::string day) {
+    if (!isTimeSlotAvailable(day, timeSlot))
+        return;
 
-    // Create and add a new class to the week schedule
     ScheduledClass newClass = { courseId, teacherName, roomId, timeSlot, day };
     weekSchedule[dayIndex[day]].push_back(newClass);
-
-    // Update the teacher's schedule
     addClassToTeacherSchedule(teacherName, day, timeSlot);
+    reserveTimeSlot(day, timeSlot);
 }
 
 
-// Chromosome method implementation
 void Chromosome::calculateFitness(SchoolScheduler& scheduler) {
-    fitness = 0.0;
-    for (auto& gene : genes) {
-        if (scheduler.isTeacherAvailable(gene.teacherName, gene.day, gene.timeSlot) &&
-            scheduler.isRoomAvailable(gene.roomId, gene.day, gene.timeSlot)) {
+    std::map<std::string, std::set<int>> usedTimeSlots;
+    fitness = 0;
+
+    for (auto gene : genes) {
+        bool isTimeSlotFree = usedTimeSlots[gene.day].find(gene.timeSlot) == usedTimeSlots[gene.day].end();
+
+        if (isTimeSlotFree &&
+            isTeacherAvailable(scheduler, gene.teacherName, gene.day, gene.timeSlot) &&
+            isRoomAvailable(scheduler, gene.roomId, gene.day, gene.timeSlot))
+        {
             fitness += 1.0;
+            usedTimeSlots[gene.day].insert(gene.timeSlot);
         }
     }
     fitness /= genes.size();
 }
 
+
+std::vector<Gene> Chromosome::getScheduleForDay(std::string day) {
+    std::vector<Gene> scheduleForDay;
+    for (auto gene : genes) {
+        if (gene.day == day)
+            scheduleForDay.push_back(gene);
+    }
+    return scheduleForDay;
+}
+
 void CourseSchedulerGA::initializePopulation() {
-    // Fetch all the necessary data from the database
     SQLiteHandler* dbHandler = SQLiteHandler::getInstance();
-    TeacherManagement* allTeachers = dbHandler->getTeachers();
     CourseManagement* allCourses = dbHandler->getCourses();
-    RoomManagement* allRooms = dbHandler->getClassrooms();
 
-    // Define the working days and time slots
     std::vector<std::string> days = { "monday", "tuesday", "wednesday", "thursday", "friday", "saturday" };
-    std::vector<int> timeSlots = { 0, 1, 2, 3 }; // Assuming four time slots per day
+    std::vector<int> timeSlots = { 9, 11, 13, 15 };
 
-    // Random number generation setup
     std::random_device rd;
-    std::mt19937 gen(rd());
+    std::default_random_engine gen(rd());
 
-    // Initialize the population with random but valid chromosomes
-    for (int i = 0; i < populationSize; ++i) {
+    for (int i = 0; i < populationSize; i++) {
         Chromosome newChromosome;
+        std::map<int, int> courseScheduleCount;
 
         for (const std::string& day : days) {
             for (int timeSlot : timeSlots) {
-                // Randomly select a teacher, course, and room
-                std::uniform_int_distribution<> teacherDist(0, allTeachers->getIds().size() - 1);
-                std::uniform_int_distribution<> courseDist(0, allCourses->getIds().size() - 1);
-                std::uniform_int_distribution<> roomDist(0, allRooms->getIds().size() - 1);
-
-                int teacherIndex = teacherDist(gen);
+                std::uniform_int_distribution<int> courseDist(0, allCourses->getIds().size() - 1);
                 int courseIndex = courseDist(gen);
-                int roomIndex = roomDist(gen);
+                int courseId = allCourses->getIds()[courseIndex];
 
-                // Create a gene with the selected information
+                if (courseScheduleCount[courseId] >= 4) {
+                    continue;
+                }
+
+                std::string courseName = allCourses->getNames()[courseIndex];
+                std::string teacherName = dbHandler->getTeacherByCourseName(courseName);
+
+                std::vector<std::string> roomNames = allCourses->getRooms()[courseIndex];
+                std::uniform_int_distribution<int> roomDist(0, roomNames.size() - 1);
+                std::string roomName = roomNames[roomDist(gen)];
+                int roomId = dbHandler->getRoomIdByName(roomName);
+
                 Gene gene;
-                gene.courseId = allCourses->getIds()[courseIndex];
-                gene.teacherName = allTeachers->getIds()[teacherIndex];
-                gene.roomId = allRooms->getIds()[roomIndex];
+                gene.courseId = courseId;
+                gene.courseName = courseName;
+                gene.teacherName = teacherName;
+                gene.roomId = roomId;
+                gene.roomName = roomName;
                 gene.timeSlot = timeSlot;
                 gene.day = day;
 
-                // Add the gene to the chromosome if the teacher and room are available
-                if (scheduler->isTeacherAvailable(allTeachers->getNames()[teacherIndex], day, timeSlot) &&
-                    scheduler->isRoomAvailable(allRooms->getIds()[roomIndex], day, timeSlot)) {
+                if (isTeacherAvailable(*scheduler, gene.teacherName, day, timeSlot) &&
+                    isRoomAvailable(*scheduler, roomId, day, timeSlot)) {
                     newChromosome.genes.push_back(gene);
+                    courseScheduleCount[courseId]++;
                 }
             }
         }
 
-        // Calculate the fitness for the new chromosome
         newChromosome.calculateFitness(*scheduler);
-
-        // Add the new chromosome to the population
         population.push_back(newChromosome);
     }
 }
 
-Chromosome CourseSchedulerGA::selectParent() {
-    // Define tournament size, which is how many chromosomes will compete to be a parent
-    const size_t tournamentSize = 5; // This can be adjusted
-    std::uniform_int_distribution<> dist(0, population.size() - 1);
 
-    // Start with a random chromosome as the current best
+
+Chromosome CourseSchedulerGA::selectParent() {
+    int tournamentSize = 5;
+    std::uniform_int_distribution<int> dist(0, population.size() - 1);
+
     int bestIndex = dist(generator);
     Chromosome best = population[bestIndex];
 
-    // Conduct the tournament
-    for (size_t i = 0; i < tournamentSize - 1; ++i) { // We already have one contestant
+    for (int i = 0; i < tournamentSize - 1; i++) {
         int newIndex = dist(generator);
         Chromosome competitor = population[newIndex];
         if (competitor.fitness > best.fitness) {
-            best = competitor; // New best found
+            best = competitor;
             bestIndex = newIndex;
         }
     }
-
-    // Return the chromosome that won the tournament
     return best;
 }
 
-Chromosome CourseSchedulerGA::crossover(const Chromosome& parent1, const Chromosome& parent2) {
+Chromosome CourseSchedulerGA::crossover(Chromosome& parent1, Chromosome& parent2) {
     Chromosome offspring;
-    std::uniform_int_distribution<> dist(0, parent1.genes.size() - 1);
+    std::uniform_int_distribution<int> dist(0, parent1.genes.size() - 1);
     int crossoverPoint = dist(generator);
 
-    for (int i = 0; i < crossoverPoint; ++i) {
+    for (int i = 0; i < crossoverPoint; ++i)
         offspring.genes.push_back(parent1.genes[i]);
-    }
-    for (int i = crossoverPoint; i < parent2.genes.size(); ++i) {
+    for (int i = crossoverPoint; i < parent2.genes.size(); ++i)
         offspring.genes.push_back(parent2.genes[i]);
-    }
 
     offspring.calculateFitness(*scheduler);
     return offspring;
 }
 
 void CourseSchedulerGA::mutate(Chromosome& chromosome) {
-    std::uniform_int_distribution<> geneDist(0, chromosome.genes.size() - 1);
-    std::uniform_int_distribution<> timeSlotDist(0, 3); // Assuming 4 time slots
+    std::uniform_int_distribution<int> geneDist(0, chromosome.genes.size() - 1);
+
+    std::vector<int> newTimeSlots = { 9, 11, 13, 15 };
+    std::uniform_int_distribution<int> timeSlotDist(0, newTimeSlots.size() - 1);
 
     SQLiteHandler* dbHandler = SQLiteHandler::getInstance();
-    int count = dbHandler->getRoomCount(); // Get the total number of rooms
-    std::uniform_int_distribution<> roomDist(0, count - 1); // Corrected line
+    int count = dbHandler->getRoomCount();
+    std::uniform_int_distribution<int> roomDist(0, count - 1);
 
     int geneIndex = geneDist(generator);
-    chromosome.genes[geneIndex].timeSlot = timeSlotDist(generator);
-    chromosome.genes[geneIndex].roomId = roomDist(generator); // Randomly change room
+    int newTimeSlotIndex = timeSlotDist(generator);
+    int newTimeSlot = newTimeSlots[newTimeSlotIndex];
+    int newRoomId = roomDist(generator);
 
+    for (auto gene : chromosome.genes) {
+        if (gene.day == chromosome.genes[geneIndex].day && gene.timeSlot == newTimeSlot)
+            return;
+    }
+
+    chromosome.genes[geneIndex].timeSlot = newTimeSlot;
+    chromosome.genes[geneIndex].roomId = newRoomId;
     chromosome.calculateFitness(*scheduler);
 }
 
@@ -216,14 +217,17 @@ void CourseSchedulerGA::createNewGeneration() {
 }
 
 Chromosome CourseSchedulerGA::run() {
-    for (int generation = 0; generation < 20; ++generation) {
-        createNewGeneration();
-        // Optionally: Find and log the best chromosome of each generation
-    }
+    initializePopulation();
 
-    // Find and return the best chromosome in the final generation
-    return *std::max_element(population.begin(), population.end(),
-        [](const Chromosome& a, const Chromosome& b) {
-            return a.fitness < b.fitness;
-        });
+    double bestFitness = -1.0;
+    Chromosome bestChromosome;
+
+    for (auto chromosome : population) {
+        if (chromosome.fitness > bestFitness) {
+            bestFitness = chromosome.fitness;
+            bestChromosome = chromosome;
+        }
+    }
+    return bestChromosome;
 }
+

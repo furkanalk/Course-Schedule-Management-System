@@ -10,6 +10,7 @@
 #include "RoomManagement.h"
 #include "SQLiteHandler.h"
 #include <string>
+#include <set>
 
 struct TeacherSchedule {
     std::string teacherName;
@@ -27,8 +28,10 @@ struct ScheduledClass {
 
 struct Gene {
     int courseId;
+    std::string courseName;
     std::string teacherName;
     int roomId;
+    std::string roomName;
     int timeSlot;
     std::string day;
 };
@@ -36,18 +39,26 @@ struct Gene {
 
 class SchoolScheduler {
 private:
+    std::map<std::string, std::set<int>> occupiedTimeSlots;
     std::vector<std::vector<TeacherSchedule>> teacherSchedules;
     std::vector<std::vector<ScheduledClass>> weekSchedule;
+
+    std::map<std::string, int> dayIndex = { 
+        {"monday", 0}, {"tuesday", 1}, {"wednesday", 2}, {"thursday", 3}, {"friday", 4}, {"saturday", 5}
+    };
 public:
     SchoolScheduler() {
-        // Initialize teacherSchedules for each day of the week
-        teacherSchedules.resize(6); // Assuming 6 days a week
+        teacherSchedules.resize(6);
     }
+
+    bool isTimeSlotAvailable(std::string day, int timeSlot);
+    void reserveTimeSlot(std::string day, int timeSlot);
     void initializeWeekSchedule();
-    void addClassToTeacherSchedule(const std::string& teacherName, const std::string& day, int timeSlot);
-    void scheduleClass(int courseId, const std::string& teacherName, int roomId, int timeSlot, const std::string& day);
-    bool isTeacherAvailable(const std::string& teacherName, const std::string& day, int timeSlot);
-    bool isRoomAvailable(int roomId, const std::string& day, int timeSlot);
+    void addClassToTeacherSchedule(std::string teacherName, std::string day, int timeSlot);
+    void scheduleClass(int courseId, std::string teacherName, int roomId, int timeSlot, std::string day);
+
+    friend bool isTeacherAvailable(SchoolScheduler& scheduler, std::string teacherName, std::string day, int timeSlot);
+    friend bool isRoomAvailable(SchoolScheduler& scheduler, int roomId, std::string day, int timeSlot);
 };
 
 struct Chromosome {
@@ -55,11 +66,12 @@ struct Chromosome {
     double fitness;
 
     void calculateFitness(SchoolScheduler& scheduler);
+    std::vector<Gene> getScheduleForDay(std::string day);
 };
 
 class CourseSchedulerGA {
 private:
-    SchoolScheduler* scheduler;  // Pointer to a SchoolScheduler object
+    SchoolScheduler* scheduler;
     std::vector<Chromosome> population;
     int populationSize;
     double mutationRate;
@@ -74,7 +86,7 @@ public:
 
     void initializePopulation();
     Chromosome selectParent();
-    Chromosome crossover(const Chromosome& parent1, const Chromosome& parent2);
+    Chromosome crossover(Chromosome& parent1, Chromosome& parent2);
     void mutate(Chromosome& chromosome);
     void createNewGeneration();
     Chromosome run();

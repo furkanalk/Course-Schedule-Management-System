@@ -6,6 +6,7 @@
 #include "TeacherManagement.h"
 #include "CourseManagement.h"
 #include "RoomManagement.h"
+#include "schedule.h"
 #include <string>
 #include <vector>
 
@@ -23,23 +24,25 @@ public:
     static SQLiteHandler* getInstance();
 
     // Teachers
-    bool insert(TeacherManagement& teacher);
+    bool operator+=(TeacherManagement& teacher);
     bool update(TeacherManagement& updatedTeacher);
-    bool deleteData(TeacherManagement& teacher);
+    bool operator-=(TeacherManagement& teacher);
     TeacherManagement* getTeachers();
-    TeacherManagement* getTeacherByName(const std::string& teacherName);
+    TeacherManagement* getTeacherByName(std::string teacherName);
+    std::string getTeacherByCourseName(std::string courseName);
 
     // Classrooms
-    bool insert(RoomManagement& room);
+    bool operator+=(RoomManagement& room);
     bool update(RoomManagement& updatedClassroom);
-    bool deleteData(RoomManagement& room);
+    bool operator-=(RoomManagement& room);
     RoomManagement* getClassrooms();
     int getRoomCount();
+    int getRoomIdByName(std::string roomName);
 
     // Courses
-    bool insert(CourseManagement& course);
+    bool operator+=(CourseManagement& course);
     bool update(CourseManagement& updatedCourse);
-    bool deleteData(CourseManagement& course);
+    bool operator-=(CourseManagement& course);
     CourseManagement* getCourses();
 };
 

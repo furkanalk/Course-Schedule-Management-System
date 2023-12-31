@@ -2,6 +2,7 @@
 #include "user.h"
 #include "SQLiteHandler.h"
 #include <tchar.h>
+#include <fstream>
 
 WindowHandler WindowHandler::wh;
 
@@ -11,6 +12,7 @@ WindowHandler::WindowHandler() {
     windowCreationStatus["adminLogin"] = false;
     windowCreationStatus["adminInterface"] = false;
     windowCreationStatus["adminCourseManagement"] = false;
+    windowCreationStatus["adminCourseScheduling"] = false;
     windowCreationStatus["adminManageCourse"] = false;
     windowCreationStatus["adminAddCourse"] = false;
     windowCreationStatus["adminTeacherManagement"] = false;
@@ -158,6 +160,95 @@ void WindowHandler::setAdminInterfaceVisible(bool visible) {
     ShowWindow(adminInterface.teachers, cmdShow);
     ShowWindow(adminInterface.students, cmdShow);
     ShowWindow(adminInterface.previous, cmdShow);
+}
+
+/* Create Course Scheduling */
+void WindowHandler::createAdminCourseSchedulingWindows(HWND hWnd) {
+    // Font style
+    HFONT hFontH1 = CreateFont(32, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
+    HFONT hFontH2 = CreateFont(32, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
+    HFONT hFontH3 = CreateFont(24, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
+
+    // Window Controls
+    adminCourseScheduling.header = CreateWindow(TEXT("static"), TEXT("- Course Schedules -"), WS_CHILD | ES_CENTER, 100, 30, 600, 450, hWnd, NULL, NULL, NULL);
+    adminCourseScheduling.mondayHeader = CreateWindow(TEXT("static"), TEXT("Mon."), WS_CHILD | ES_CENTER, 10, 90, 50, 20, hWnd, NULL, NULL, NULL);
+    adminCourseScheduling.monday = CreateWindowEx(0, WC_LISTBOX, NULL, WS_BORDER | WS_CHILD | WS_VSCROLL, 80, 90, 700, 80, hWnd, (HMENU)220, NULL, NULL);
+    adminCourseScheduling.tuesdayHeader = CreateWindow(TEXT("static"), TEXT("Tue."), WS_CHILD | ES_CENTER, 10, 170, 50, 20, hWnd, NULL, NULL, NULL);
+    adminCourseScheduling.tuesday = CreateWindowEx(0, WC_LISTBOX, NULL, WS_BORDER | WS_CHILD | WS_VSCROLL, 80, 170, 700, 80, hWnd, (HMENU)221, NULL, NULL);
+    adminCourseScheduling.wednesdayHeader = CreateWindow(TEXT("static"), TEXT("Wed."), WS_CHILD | ES_CENTER, 10, 250, 50, 20, hWnd, NULL, NULL, NULL);
+    adminCourseScheduling.wednesday = CreateWindowEx(0, WC_LISTBOX, NULL, WS_BORDER | WS_CHILD | WS_VSCROLL, 80, 250, 700, 80, hWnd, (HMENU)222, NULL, NULL);
+    adminCourseScheduling.thursdayHeader = CreateWindow(TEXT("static"), TEXT("Thur."), WS_CHILD | ES_CENTER, 10, 330, 50, 20, hWnd, NULL, NULL, NULL);
+    adminCourseScheduling.thursday = CreateWindowEx(0, WC_LISTBOX, NULL, WS_BORDER | WS_CHILD | WS_VSCROLL, 80, 330, 700, 80, hWnd, (HMENU)223, NULL, NULL);
+    adminCourseScheduling.fridayHeader = CreateWindow(TEXT("static"), TEXT("Fri."), WS_CHILD | ES_CENTER, 10, 410, 50, 20, hWnd, NULL, NULL, NULL);
+    adminCourseScheduling.friday = CreateWindowEx(0, WC_LISTBOX, NULL, WS_BORDER | WS_CHILD | WS_VSCROLL, 80, 410, 700, 80, hWnd, (HMENU)224, NULL, NULL);
+    adminCourseScheduling.saturdayHeader = CreateWindow(TEXT("static"), TEXT("Sat."), WS_CHILD | ES_CENTER, 10, 490, 50, 20, hWnd, NULL, NULL, NULL);
+    adminCourseScheduling.saturday = CreateWindowEx(0, WC_LISTBOX, NULL, WS_BORDER | WS_CHILD | WS_VSCROLL, 80, 490, 700, 80, hWnd, (HMENU)225, NULL, NULL);
+    adminCourseScheduling.previous = CreateWindow(TEXT("button"), TEXT("Exit"), WS_BORDER | WS_CHILD, 350, 580, 80, 30, hWnd, (HMENU)226, NULL, NULL);
+
+    std::wstring filename = L"schedules.txt";
+    std::ifstream file(filename);
+
+    std::string line;
+    while (std::getline(file, line)) {
+        std::wstring wline = convertToWideString(line);
+        int dayPos = wline.find(L"Day: ");
+        if (dayPos == std::wstring::npos) {
+            continue;
+        }
+        std::wstring day = wline.substr(dayPos + 5);
+        HWND listBoxHandle = NULL;
+        if (day == L"monday") {
+            listBoxHandle = adminCourseScheduling.monday;
+        }
+        else if (day == L"tuesday") {
+            listBoxHandle = adminCourseScheduling.tuesday;
+        }
+        else if (day == L"wednesday") {
+            listBoxHandle = adminCourseScheduling.wednesday;
+        }
+        else if (day == L"thursday") {
+            listBoxHandle = adminCourseScheduling.thursday;
+        }
+        else if (day == L"friday") {
+            listBoxHandle = adminCourseScheduling.friday;
+        }
+        else if (day == L"saturday") {
+            listBoxHandle = adminCourseScheduling.saturday;
+        }
+
+        if (listBoxHandle != NULL) {
+            LRESULT index = SendMessage(listBoxHandle, LB_ADDSTRING, 0, (LPARAM)wline.c_str());
+        }
+    }
+    file.close();
+
+    // Apply fonts to controls
+    SendMessage(adminCourseScheduling.header, WM_SETFONT, (WPARAM)hFontH1, TRUE);
+    SendMessage(adminCourseScheduling.mondayHeader, WM_SETFONT, (WPARAM)hFontH3, TRUE);
+    SendMessage(adminCourseScheduling.tuesdayHeader, WM_SETFONT, (WPARAM)hFontH3, TRUE);
+    SendMessage(adminCourseScheduling.wednesdayHeader, WM_SETFONT, (WPARAM)hFontH3, TRUE);
+    SendMessage(adminCourseScheduling.thursdayHeader, WM_SETFONT, (WPARAM)hFontH3, TRUE);
+    SendMessage(adminCourseScheduling.fridayHeader, WM_SETFONT, (WPARAM)hFontH3, TRUE);
+    SendMessage(adminCourseScheduling.saturdayHeader, WM_SETFONT, (WPARAM)hFontH3, TRUE);
+    SendMessage(adminCourseScheduling.previous, WM_SETFONT, (WPARAM)hFontH3, TRUE);
+}
+
+void WindowHandler::setAdminCourseSchedulingVisible(bool visible) {
+    int cmdShow = visible ? SW_SHOW : SW_HIDE;
+    ShowWindow(adminCourseScheduling.header, cmdShow);
+    ShowWindow(adminCourseScheduling.mondayHeader, cmdShow);
+    ShowWindow(adminCourseScheduling.monday, cmdShow);
+    ShowWindow(adminCourseScheduling.tuesdayHeader, cmdShow);
+    ShowWindow(adminCourseScheduling.tuesday, cmdShow);
+    ShowWindow(adminCourseScheduling.wednesdayHeader, cmdShow);
+    ShowWindow(adminCourseScheduling.wednesday, cmdShow);
+    ShowWindow(adminCourseScheduling.thursdayHeader, cmdShow);
+    ShowWindow(adminCourseScheduling.thursday, cmdShow);
+    ShowWindow(adminCourseScheduling.fridayHeader, cmdShow);
+    ShowWindow(adminCourseScheduling.friday, cmdShow);
+    ShowWindow(adminCourseScheduling.saturdayHeader, cmdShow);
+    ShowWindow(adminCourseScheduling.saturday, cmdShow);
+    ShowWindow(adminCourseScheduling.previous, cmdShow);
 }
 
 /* Course Management */

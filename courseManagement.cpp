@@ -103,7 +103,7 @@ bool CourseManagement::removeCourse(HWND hWnd, HWND hComboBox) {
 
 	updatedCourses->setCurrentId(courseId);
 
-	if (!dbHandler->deleteData(*updatedCourses)) {
+	if (!(*dbHandler -= *updatedCourses)) {
 		MessageBox(hWnd, L"Failed to delete the course.", L"Error", MB_ICONERROR | MB_OK);
 		return false;
 	}
@@ -138,7 +138,6 @@ bool CourseManagement::removeCourse(HWND hWnd, HWND hComboBox) {
 	return true;
 }
 
-
 /* Admin course management Wnd */
 void CourseManagement::showInterface(HWND hWnd) {
 	WindowHandler* wh = WindowHandler::getInstance();
@@ -147,6 +146,7 @@ void CourseManagement::showInterface(HWND hWnd) {
 	wh->setAdminInterfaceVisible(false);
 	wh->setAdminAddCourseVisible(false);
 	wh->setAdminManageCourseVisible(false);
+	wh->setAdminCourseSchedulingVisible(false);
 
 	// Show Admin Inferface
 	if (!wh->isWindowCreated("adminCourseManagement")) {
@@ -231,10 +231,23 @@ void CourseManagement::insertToDB(HWND hWnd) {
 
 	SQLiteHandler* dbHandler = SQLiteHandler::getInstance();
 
-	if (dbHandler->insert(courseData)) {
+	if (*dbHandler += courseData) {
 		MessageBox(hWnd, TEXT("Course inserted successfully!"), TEXT("Success"), MB_OK | MB_ICONINFORMATION);
 	}
 	else {
 		MessageBox(NULL, TEXT("Failed to insert data."), TEXT("Error"), MB_OK | MB_ICONERROR);
 	}
+}
+
+void CourseManagement::createCourseScheduling(HWND hWnd) {
+	WindowHandler* wh = WindowHandler::getInstance();
+
+	// Hide Course Management
+	wh->setAdminCourseManagementVisible(false);
+
+	// Show Add Course
+	if (!wh->isWindowCreated("adminCourseScheduling")) {
+		wh->createAdminCourseSchedulingWindows(hWnd);
+	}
+	wh->setAdminCourseSchedulingVisible();
 }

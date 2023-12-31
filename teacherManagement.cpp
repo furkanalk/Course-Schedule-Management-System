@@ -111,7 +111,7 @@ void TeacherManagement::insertToDB(HWND hWnd) {
 
 	SQLiteHandler* dbHandler = SQLiteHandler::getInstance();
 
-	if (dbHandler->insert(teacherData)) {
+	if (*dbHandler += teacherData) {
 		MessageBox(NULL, TEXT("Data inserted successfully!"), TEXT("Success"), MB_OK | MB_ICONINFORMATION);
 	}
 	else {
@@ -216,10 +216,11 @@ bool TeacherManagement::removeTeacher(HWND hWnd, HWND hComboBox) {
 	TeacherManagement* updatedTeachers = dbHandler->getTeachers();
 	updatedTeachers->setCurrentId(teacherId);
 
-	if (!dbHandler->deleteData(*updatedTeachers)) {
+	if (!(*dbHandler -= *updatedTeachers)) {
 		MessageBox(hWnd, L"Failed to delete the teacher.", L"Error", MB_ICONERROR | MB_OK);
 		return false;
 	}
+
 
 	int teacherIndex = -1;
 	for (int i = 0; i < updatedTeachers->ids.size(); i++) {
