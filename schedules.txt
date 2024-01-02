@@ -1,0 +1,19 @@
+Course: English, Teacher: Ali Candan, Room: Room-401, Time: 9, Day: monday
+Course: Physics, Teacher: Sude Korkmaz, Room: Physics Lab-1, Time: 13, Day: monday
+Course: Math, Teacher: Sinan Ercil, Room: Room-401, Time: 15, Day: monday
+Course: Math, Teacher: Sinan Ercil, Room: Room-401, Time: 9, Day: tuesday
+Course: Math, Teacher: Sinan Ercil, Room: Room-103, Time: 11, Day: tuesday
+Course: Math, Teacher: Sinan Ercil, Room: Room-401, Time: 13, Day: tuesday
+Course: English, Teacher: Ali Candan, Room: Room-103, Time: 15, Day: tuesday
+Course: Physics, Teacher: Sude Korkmaz, Room: Physics Lab-1, Time: 9, Day: wednesday
+Course: Math, Teacher: Sinan Ercil, Room: Room-401, Time: 11, Day: wednesday
+Course: Spanish, Teacher: Semih Ozturk, Room: Room-202, Time: 13, Day: wednesday
+Course: English, Teacher: Ali Candan, Room: Room-401, Time: 15, Day: wednesday
+Course: Spanish, Teacher: Semih Ozturk, Room: Room-202, Time: 13, Day: thursday
+Course: English, Teacher: Ali Candan, Room: Room-103, Time: 9, Day: friday
+Course: Programming Languages, Teacher: Poyraz Karayel, Room: PC Lab-1, Time: 11, Day: friday
+Course: Programming Languages, Teacher: Poyraz Karayel, Room: PC Lab-1, Time: 13, Day: friday
+Course: Spanish, Teacher: Semih Ozturk, Room: Room-202, Time: 15, Day: friday
+Course: Math, Teacher: Sinan Ercil, Room: Room-401, Time: 9, Day: saturday
+Course: Spanish, Teacher: Semih Ozturk, Room: Room-103, Time: 13, Day: saturday
+Course: Programming Languages, Teacher: Poyraz Karayel, Room: PC Lab-2, Time: 15, Day: saturday
